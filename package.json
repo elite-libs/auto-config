@@ -5,13 +5,21 @@
   "type": "commonjs",
   "main": "index.js",
   "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
     "build": "npx tsc",
     "check": "npx tsc --noEmit"
   },
-  "keywords": [],
+  "keywords": [
+    "config",
+    "nodejs",
+    "command-line",
+    "arguments",
+    "environment",
+    "variables"
+  ],
   "author": {
     "name": "justsml",
     "url": "https://danlevy.net"
@@ -33,8 +41,6 @@
     "zod": "^3.11.6"
   },
   "files": [
-    "dist",
-    "index.d.ts",
-    "index.js"
+    "dist"
   ]
 }

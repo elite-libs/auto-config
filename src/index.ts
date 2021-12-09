@@ -1,11 +1,47 @@
-// import { ZodSchema } from 'zod';
+import * as z from 'zod';
 import minimist from 'minimist';
-import { isObject, keys } from 'lodash';
+import { applyType, isNestedObject, toBoolean } from './utils';
 
 export const xConfig = function (
   config: Record<string, CommandOption>,
-  options: xConfigOptions = {}
+  options: xConfigOptions = {
+    normalizeCase: true,
+  }
 ) {
+  // Get raw config data based on input keys, env vars, and arguments
+  const commandOptions = getRawConfigObject(options, config);
+  const schemaObject = verifySchema(config, commandOptions);
+
+  return commandOptions as z.infer<typeof schemaObject>;
+};
+
+function verifySchema(config: Record<string, CommandOption>, commandOptions: Record<string, unknown>) {
+  type ConfigKeys = keyof typeof config;
+
+  const schemaObject = z.object(
+    Object.entries(config).reduce(
+      (
+        schema: Record<ConfigKeys, ReturnType<typeof getOptionSchema>>,
+        [name, commandOption]
+      ) => {
+        schema[name] = getOptionSchema({ commandOption });
+        return schema;
+      },
+      {}
+    )
+  );
+
+  // verify schema
+  const parseResults = schemaObject.safeParse(commandOptions);
+  if (!parseResults.success) {
+    throw new Error(
+      `Config Error! Check your config, arguments and env vars! ${parseResults.error.toString()}`
+    );
+  }
+  return schemaObject;
+}
+
+function getRawConfigObject(options: xConfigOptions, config: Record<string, CommandOption>) {
   let cliArgs = options._overrideArg || minimist(process.argv.slice(2));
   let envKeys = options._overrideEnv || process.env;
 
@@ -21,9 +57,8 @@ export const xConfig = function (
     },
     {}
   );
-
   return commandOptions;
-};
+}
 
 function normalizeObjectKeys<TInput>(
   obj: TInput extends object ? TInput : never
@@ -39,32 +74,21 @@ function normalizeObjectKeys<TInput>(
   );
 }
 
-function applyType(value: string, type: OptionTypeConfig['type']) {
-  switch (type) {
-    case 'string':
-      return value;
-    case 'number':
-      return parseInt(value);
-    case 'boolean':
-      return toBoolean(value);
-    case 'array':
-      return value.split(',');
-    // case 'object':
-    //   return value as Record<string, unknown>;
-    default:
-      return value;
+function getOptionSchema({ commandOption }: { commandOption: CommandOption }) {
+  let zType =
+    commandOption.type === 'array'
+      ? z[commandOption.type](z.any())
+      : z[commandOption.type]();
+  if (commandOption.default != null) {
+    // @ts-ignore
+    zType = zType.default(commandOption.default);
   }
+  if (!commandOption.required) {
+    // @ts-ignore
+    zType = zType.optional();
+  }
+  return zType;
 }
-
-function toBoolean(value: any) {
-  value = value.toString().toLowerCase();
-  return value === 'true' || value === 'yes' || value === 'y' || value === '1';
-}
-
-function isNestedObject(obj: unknown) {
-  return isObject(obj) && !Array.isArray(obj) && keys(obj).length > 0;
-}
-
 function getOptionValue({
   commandOption,
   cliArgs,
@@ -100,7 +124,8 @@ function getOptionValue({
   if (matchingEnv) return applyType(matchingEnv, commandOption.type);
 
   // note: Check Default
-  if (commandOption.default != null) return applyType(`${commandOption.default}`, commandOption.type);
+  if (commandOption.default != null)
+    return applyType(`${commandOption.default}`, commandOption.type);
 
   return undefined;
 }
@@ -114,18 +139,14 @@ export type CommandOption = OptionTypeConfig & {
 };
 
 export type xConfigOptions = {
+  normalizeCase?: boolean;
   /** override for testing */
   _overrideEnv?: NodeJS.ProcessEnv;
   /** override for testing */
   _overrideArg?: minimist.ParsedArgs;
-  normalizeCase?: boolean;
 };
 
-type NamedCommandOption = CommandOption & {
-  name: string;
-};
-
-type OptionTypeConfig =
+export type OptionTypeConfig =
   | {
       type: 'string';
       default?: string;
@@ -138,12 +159,12 @@ type OptionTypeConfig =
       transform?: (input: unknown) => number;
       validate?: (input: number) => boolean;
     }
-  | {
-      type: 'bigint';
-      default?: bigint;
-      transform?: (input: unknown) => bigint;
-      validate?: (input: bigint) => boolean;
-    }
+  // | {
+  //     type: 'bigint';
+  //     default?: bigint;
+  //     transform?: (input: unknown) => bigint;
+  //     validate?: (input: bigint) => boolean;
+  //   }
   | {
       type: 'date';
       default?: Date;
