@@ -31,5 +31,10 @@
     "lodash": "^4.17.21",
     "minimist": "^1.2.5",
     "zod": "^3.11.6"
-  }
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "index.js"
+  ]
 }
