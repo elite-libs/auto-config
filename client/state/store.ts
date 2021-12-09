@@ -13,4 +13,4 @@ export const useAppDispatch = () => useDispatch<AppDispatch>() // Export a hook 
 export type RootState = ReturnType<typeof store.getState>
 
 export default store;
-store.dispatch(appSlice.actions.)
+store.dispatch(appSlice.actions)
