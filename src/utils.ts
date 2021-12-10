@@ -1,6 +1,6 @@
 import isObject from 'lodash/isObject';
 import keys from 'lodash/keys';
-import type { OptionTypeConfig } from './';
+import type { OptionTypeConfig } from './types';
 
 export function toBoolean(value: any) {
   value = value.toString().toLowerCase();

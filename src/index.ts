@@ -1,21 +1,25 @@
 import * as z from 'zod';
 import minimist from 'minimist';
-import { applyType, isNestedObject, toBoolean } from './utils';
+import { applyType, isNestedObject } from './utils';
+import { CommandOption, xConfigOptions } from './types';
+import { isString } from 'lodash';
 
 export const xConfig = function (
   config: Record<string, CommandOption>,
   options: xConfigOptions = {
-    normalizeCase: true,
+    caseSensitive: true,
   }
 ) {
-  // Get raw config data based on input keys, env vars, and arguments
   const commandOptions = getRawConfigObject(options, config);
   const schemaObject = verifySchema(config, commandOptions);
 
   return commandOptions as z.infer<typeof schemaObject>;
 };
 
-function verifySchema(config: Record<string, CommandOption>, commandOptions: Record<string, unknown>) {
+function verifySchema(
+  config: Record<string, CommandOption>,
+  commandOptions: Record<string, unknown>
+) {
   type ConfigKeys = keyof typeof config;
 
   const schemaObject = z.object(
@@ -41,11 +45,14 @@ function verifySchema(config: Record<string, CommandOption>, commandOptions: Rec
   return schemaObject;
 }
 
-function getRawConfigObject(options: xConfigOptions, config: Record<string, CommandOption>) {
+function getRawConfigObject(
+  options: xConfigOptions,
+  config: Record<string, CommandOption>
+) {
   let cliArgs = options._overrideArg || minimist(process.argv.slice(2));
   let envKeys = options._overrideEnv || process.env;
 
-  if (options.normalizeCase) {
+  if (!options.caseSensitive) {
     cliArgs = normalizeObjectKeys(cliArgs) as minimist.ParsedArgs;
     envKeys = normalizeObjectKeys(envKeys) as NodeJS.ProcessEnv;
   }
@@ -89,6 +96,7 @@ function getOptionSchema({ commandOption }: { commandOption: CommandOption }) {
   }
   return zType;
 }
+
 function getOptionValue({
   commandOption,
   cliArgs,
@@ -107,79 +115,20 @@ function getOptionValue({
     ? environmentKeys
     : ([environmentKeys] as string[]);
 
-  // note: Check Arg Names
-  const matchingArgName = [...keys, ...argumentNames].find(
+  const argNameMatch = [...keys, ...argumentNames].find(
     (key) => typeof key === 'string' && cliArgs[key]
   );
-  const matchingArg =
-    typeof matchingArgName === 'string' ? cliArgs[matchingArgName] : null;
+  const matchingArg = isString(argNameMatch) ? cliArgs[argNameMatch] : null;
   if (matchingArg) return applyType(matchingArg, commandOption.type);
 
-  // note: Check Env Keys
-  const matchingEnvKey = [...keys, environmentKeys].find(
+  const envKeyMatch = [...keys, environmentKeys].find(
     (key) => typeof key === 'string' && envKeys[key]
   );
-  const matchingEnv =
-    typeof matchingEnvKey === 'string' ? envKeys[matchingEnvKey] : null;
+  const matchingEnv = isString(envKeyMatch) ? envKeys[envKeyMatch] : null;
   if (matchingEnv) return applyType(matchingEnv, commandOption.type);
 
-  // note: Check Default
   if (commandOption.default != null)
     return applyType(`${commandOption.default}`, commandOption.type);
 
   return undefined;
 }
-
-export type CommandOption = OptionTypeConfig & {
-  doc?: string;
-  keys?: string | string[];
-  environmentKeys?: string | string[];
-  argumentNames?: string | string[];
-  required?: boolean;
-};
-
-export type xConfigOptions = {
-  normalizeCase?: boolean;
-  /** override for testing */
-  _overrideEnv?: NodeJS.ProcessEnv;
-  /** override for testing */
-  _overrideArg?: minimist.ParsedArgs;
-};
-
-export type OptionTypeConfig =
-  | {
-      type: 'string';
-      default?: string;
-      transform?: (input: unknown) => string;
-      validate?: (input: string) => boolean;
-    }
-  | {
-      type: 'number';
-      default?: number;
-      transform?: (input: unknown) => number;
-      validate?: (input: number) => boolean;
-    }
-  // | {
-  //     type: 'bigint';
-  //     default?: bigint;
-  //     transform?: (input: unknown) => bigint;
-  //     validate?: (input: bigint) => boolean;
-  //   }
-  | {
-      type: 'date';
-      default?: Date;
-      transform?: (input: unknown) => Date;
-      validate?: (input: Date) => boolean;
-    }
-  | {
-      type: 'boolean';
-      default?: boolean;
-      transform?: (input: unknown) => boolean;
-      validate?: (input: boolean) => boolean;
-    }
-  | {
-      type: 'array';
-      default?: any[];
-      transform?: (input: unknown) => any[];
-      validate?: (input: any[]) => boolean;
-    };
