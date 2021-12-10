@@ -3,35 +3,37 @@ import minimist from 'minimist';
 import { applyType, isNestedObject } from './utils';
 import { CommandOption, xConfigOptions } from './types';
 import { isString } from 'lodash';
+import { reduce } from 'lodash';
 
-export const xConfig = function (
-  config: Record<string, CommandOption>,
+export const xConfig = function<TInput extends Record<string, CommandOption>>(
+  config: TInput,
   options: xConfigOptions = {
     caseSensitive: true,
   }
 ) {
-  const commandOptions = getRawConfigObject(options, config);
+  const commandOptions = getRawConfigObject(config, options);
   const schemaObject = verifySchema(config, commandOptions);
 
   return commandOptions as z.infer<typeof schemaObject>;
 };
 
-function verifySchema(
-  config: Record<string, CommandOption>,
+function verifySchema<TInput extends Record<string, CommandOption>>(
+  config: TInput,
   commandOptions: Record<string, unknown>
 ) {
-  type ConfigKeys = keyof typeof config;
+  type ConfigKeys = keyof TInput;
 
   const schemaObject = z.object(
     Object.entries(config).reduce(
       (
-        schema: Record<ConfigKeys, ReturnType<typeof getOptionSchema>>,
+        schema,
         [name, commandOption]
       ) => {
-        schema[name] = getOptionSchema({ commandOption });
+        // name as 
+        schema[name as keyof TInput] = getOptionSchema({ commandOption });
         return schema;
       },
-      {}
+      {} as {[K in keyof TInput]: ReturnType<typeof getOptionSchema>}
     )
   );
 
@@ -45,9 +47,9 @@ function verifySchema(
   return schemaObject;
 }
 
-function getRawConfigObject(
+function getRawConfigObject<TInput extends Record<string, CommandOption>>(
+  config: TInput,
   options: xConfigOptions,
-  config: Record<string, CommandOption>
 ) {
   let cliArgs = options._overrideArg || minimist(process.argv.slice(2));
   let envKeys = options._overrideEnv || process.env;
