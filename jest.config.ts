@@ -11,6 +11,7 @@ const config: Config.InitialOptions = {
   resetModules: true,
   globals: {
     "ts-jest": {
+      // @ts-ignore
       useESM: true,
     },
   },
