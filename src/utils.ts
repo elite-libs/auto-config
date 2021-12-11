@@ -22,7 +22,6 @@ export function applyType(value: string, type: OptionTypeConfig['type']) {
       return value.split(',');
     // case 'object':
     //   return value as Record<string, unknown>;
-    default:
-      return value;
-  }
+    }
+    return value;
 }

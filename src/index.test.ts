@@ -1,11 +1,13 @@
 import { xConfig } from './index';
 
-describe('xConfig', () => {
+console.log(process.env);
+
+describe('xConfig core functionality', () => {
   test('loads environment variables', () => {
     const config = xConfig(
       {
         port: {
-          doc: 'The port to listen on.',
+          help: 'The port to listen on.',
           keys: ['port', 'PORT'],
           type: 'number',
           required: true,
@@ -25,7 +27,7 @@ describe('xConfig', () => {
     const config = xConfig(
       {
         port: {
-          doc: 'The port to listen on.',
+          help: 'The port to listen on.',
           argumentNames: ['port', 'PORT'],
           type: 'number',
           required: true,
@@ -49,7 +51,7 @@ describe('xConfig', () => {
       xConfig(
         {
           port: {
-            doc: 'The port to listen on.',
+            help: 'The port to listen on.',
             keys: ['port', 'PORT'],
             type: 'number',
             required: true,
@@ -65,18 +67,17 @@ describe('xConfig', () => {
     ).toThrow();
   });
 
-  test('can match with case insensitivity (port === PORT)', () => {
+  test('ignores case sensitivity (port === PORT)', () => {
     const config = xConfig(
       {
         port: {
-          doc: 'The port to listen on.',
+          help: 'The port to listen on.',
           keys: ['port'],
           type: 'number',
           required: true,
         },
       },
       {
-
         _overrideEnv: {
           NODE_ENV: 'development',
           PORT: '8080',
@@ -88,3 +89,47 @@ describe('xConfig', () => {
     expect(config.port).toBe(8080);
   });
 });
+
+describe('validates config runtime rules', () => {
+  test('detects invalid string length', () => {
+    expect(() => xConfig(
+      {
+        env: {
+          help: 'Development or Production Environment',
+          keys: ['NODE_ENV'],
+          type: 'string',
+          min: 6
+        },
+      },
+      {
+        _overrideEnv: {
+          NODE_ENV: 'dev',
+        },
+      }
+    )).toThrow();
+  });
+})
+
+
+describe('advanced field processing', () => {
+  test('parses csv strings into array fields', () => {
+    expect(() => xConfig(
+      {
+        env: {
+          help: 'Development or Production Environment',
+          keys: ['NODE_ENV'],
+          type: 'string',
+          min: 6
+        },
+      },
+      {
+        _overrideEnv: {
+          NODE_ENV: 'dev',
+
+        },
+      }
+    )).toThrow();
+  });
+})
+
+

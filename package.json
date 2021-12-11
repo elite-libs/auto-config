@@ -1,17 +1,24 @@
 {
   "name": "@justsml/auto-config",
+  "description": "A Unified Config & Arguments Library for Node.js. Featuring support for environment variables, command line arguments, and JSON files!",
   "version": "1.0.0",
-  "description": "",
   "type": "commonjs",
-  "main": "index.js",
+  "private": false,
+  "packageManager": "yarn@1.10.0",
+  "engineStrict": true,
+  "engines": {
+    "yarn": ">=1.10.0",
+    "node": ">=12.0.0"
+  },
+  "main": "./dist/index.js",
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "jest ./dist/index.test.js",
-    "test:coverage": "npm test --coverage",
+    "publish": "npm publish --access public",
     "pretest": "npm run build",
-    "build": "npx tsc",
-    "check": "npx tsc --noEmit"
+    "test": "jest",
+    "test:coverage": "npm test --coverage",
+    "build": "npx tsc"
   },
   "keywords": [
     "config",

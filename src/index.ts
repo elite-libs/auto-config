@@ -1,11 +1,26 @@
 import * as z from 'zod';
 import minimist from 'minimist';
 import { applyType, isNestedObject } from './utils';
-import { CommandOption, xConfigOptions } from './types';
+import {
+  CommandOption,
+  ConfigResults,
+  ExtractOptionType,
+  xConfigOptions,
+} from './types';
 import { isString } from 'lodash';
 import { reduce } from 'lodash';
+import {
+  ZodNumber,
+  ZodNumberDef,
+  ZodString,
+  ZodStringDef,
+  ZodType,
+  ZodTypeDef,
+} from 'zod';
 
-export const xConfig = function<TInput extends Record<string, CommandOption>>(
+export const xConfig = function <
+  TInput extends { [K in keyof TInput]: CommandOption }
+>(
   config: TInput,
   options: xConfigOptions = {
     caseSensitive: true,
@@ -14,26 +29,21 @@ export const xConfig = function<TInput extends Record<string, CommandOption>>(
   const commandOptions = getRawConfigObject(config, options);
   const schemaObject = verifySchema(config, commandOptions);
 
-  return commandOptions as z.infer<typeof schemaObject>;
+  return commandOptions;
 };
 
-function verifySchema<TInput extends Record<string, CommandOption>>(
+function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
   config: TInput,
   commandOptions: Record<string, unknown>
 ) {
-  type ConfigKeys = keyof TInput;
-
   const schemaObject = z.object(
-    Object.entries(config).reduce(
-      (
-        schema,
-        [name, commandOption]
-      ) => {
-        // name as 
+    Object.entries<CommandOption>(config).reduce(
+      (schema, [name, commandOption]) => {
+        // name as
         schema[name as keyof TInput] = getOptionSchema({ commandOption });
         return schema;
       },
-      {} as {[K in keyof TInput]: ReturnType<typeof getOptionSchema>}
+      {} as { [K in keyof TInput]: ReturnType<typeof getOptionSchema> }
     )
   );
 
@@ -47,10 +57,9 @@ function verifySchema<TInput extends Record<string, CommandOption>>(
   return schemaObject;
 }
 
-function getRawConfigObject<TInput extends Record<string, CommandOption>>(
-  config: TInput,
-  options: xConfigOptions,
-) {
+function getRawConfigObject<
+  TInput extends { [K in keyof TInput]: CommandOption }
+>(config: TInput, options: xConfigOptions) {
   let cliArgs = options._overrideArg || minimist(process.argv.slice(2));
   let envKeys = options._overrideEnv || process.env;
 
@@ -59,12 +68,25 @@ function getRawConfigObject<TInput extends Record<string, CommandOption>>(
     envKeys = normalizeObjectKeys(envKeys) as NodeJS.ProcessEnv;
   }
 
-  const commandOptions = Object.entries(config).reduce(
-    (results: Record<string, unknown>, [name, commandOption]) => {
-      results[name] = getOptionValue({ commandOption, cliArgs, envKeys });
-      return results;
+  type Keys = keyof TInput;
+
+  const commandOptions = Object.entries<CommandOption>(config).reduce(
+    (conf, [name, opt]) => {
+      if (opt) {
+        const v = getOptionValue({ commandOption: opt, cliArgs, envKeys });
+        if (opt.type === 'string') conf[name as Keys] = (v as any);
+        if (opt.type === 'number') conf[name as Keys] = (v as any);
+        if (opt.type === 'boolean') conf[name as Keys] = (v as any);
+        if (opt.type === 'array') conf[name as Keys] = (v as any);
+        if (opt.type === 'date') conf[name as Keys] = new Date((v as any)) as any;
+      }
+      return conf;
     },
-    {}
+    {} as {
+      [K in keyof TInput]?: TInput[K]['type'] extends 'string' ? string :
+      TInput[K]['type'] extends 'number' ? number :
+      TInput[K]['type'] extends 'boolean' ? boolean : any;
+    }
   );
   return commandOptions;
 }
@@ -83,19 +105,24 @@ function normalizeObjectKeys<TInput>(
   );
 }
 
-function getOptionSchema({ commandOption }: { commandOption: CommandOption }) {
-  let zType =
-    commandOption.type === 'array'
-      ? z[commandOption.type](z.any())
-      : z[commandOption.type]();
-  if (commandOption.default != null) {
-    // @ts-ignore
-    zType = zType.default(commandOption.default);
-  }
-  if (!commandOption.required) {
-    // @ts-ignore
-    zType = zType.optional();
-  }
+function getOptionSchema({
+  commandOption: opt,
+}: {
+  commandOption: CommandOption;
+}) {
+  let zType = opt.type === 'array' ? z[opt.type](z.any()) : z[opt.type]();
+  // @ts-ignore
+  if (opt.default != null) zType = zType.default(opt.default);
+  // @ts-ignore
+  if (!opt.required) zType = zType.optional();
+
+  if ('min' in opt && 'min' in zType) zType = zType.min(opt.min!);
+  if ('max' in opt && 'max' in zType) zType = zType.max(opt.min!);
+  if ('gte' in opt && 'gte' in zType) zType = zType.gte(opt.min!);
+  if ('lte' in opt && 'lte' in zType) zType = zType.lte(opt.min!);
+  if ('gt' in opt && 'gt' in zType) zType = zType.gt(opt.min!);
+  if ('lt' in opt && 'lt' in zType) zType = zType.lt(opt.min!);
+
   return zType;
 }
 
@@ -132,5 +159,5 @@ function getOptionValue({
   if (commandOption.default != null)
     return applyType(`${commandOption.default}`, commandOption.type);
 
-  return undefined;
+  return null;
 }
