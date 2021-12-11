@@ -10,7 +10,7 @@
 
 ```ts
 // `./src/config.ts`
-export default xConfig({
+export default autoConfig({
   port: {
     help: 'The port to listen on.',
     keys: ['port', 'PORT'],
@@ -26,8 +26,6 @@ export default xConfig({
   },
 });
 ```
-
-
 
 ###  TODO
 

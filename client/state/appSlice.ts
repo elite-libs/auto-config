@@ -20,8 +20,8 @@ interface CommandOption<TDataType, TInputType = string | null | undefined> {
   validate: (input: TInputType) => boolean,
   default: TDataType,
   keys?: string | string[],
-  environmentKeys?: string | string[],
-  argumentNames?: string | string[],
+  envKeys?: string | string[],
+  argKeys?: string | string[],
   required?: boolean,
 }
 

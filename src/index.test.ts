@@ -1,10 +1,10 @@
-import { xConfig } from './index';
+import { autoConfig } from './index';
 
-console.log(process.env);
+// console.log(process.cwd());
 
-describe('xConfig core functionality', () => {
+describe('autoConfig core functionality', () => {
   test('loads environment variables', () => {
-    const config = xConfig(
+    const config = autoConfig(
       {
         port: {
           help: 'The port to listen on.',
@@ -24,11 +24,11 @@ describe('xConfig core functionality', () => {
   });
 
   test('loads argument variables', () => {
-    const config = xConfig(
+    const config = autoConfig(
       {
         port: {
           help: 'The port to listen on.',
-          argumentNames: ['port', 'PORT'],
+          argKeys: ['port', 'PORT'],
           type: 'number',
           required: true,
         },
@@ -48,7 +48,7 @@ describe('xConfig core functionality', () => {
 
   test('throws on missing variable', () => {
     expect(() =>
-      xConfig(
+      autoConfig(
         {
           port: {
             help: 'The port to listen on.',
@@ -68,7 +68,7 @@ describe('xConfig core functionality', () => {
   });
 
   test('ignores case sensitivity (port === PORT)', () => {
-    const config = xConfig(
+    const config = autoConfig(
       {
         port: {
           help: 'The port to listen on.',
@@ -78,6 +78,7 @@ describe('xConfig core functionality', () => {
         },
       },
       {
+        caseSensitive: false,
         _overrideEnv: {
           NODE_ENV: 'development',
           PORT: '8080',
@@ -92,7 +93,7 @@ describe('xConfig core functionality', () => {
 
 describe('validates config runtime rules', () => {
   test('detects invalid string length', () => {
-    expect(() => xConfig(
+    expect(() => autoConfig(
       {
         env: {
           help: 'Development or Production Environment',
@@ -113,7 +114,7 @@ describe('validates config runtime rules', () => {
 
 describe('advanced field processing', () => {
   test('parses csv strings into array fields', () => {
-    expect(() => xConfig(
+    expect(() => autoConfig(
       {
         env: {
           help: 'Development or Production Environment',
