@@ -13,7 +13,7 @@
 export default autoConfig({
   port: {
     help: 'The port to listen on.',
-    keys: ['port', 'PORT'],
+    keys: ['port'],
     flag: 'p',
     type: 'number',
     required: true,

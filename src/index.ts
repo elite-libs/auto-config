@@ -1,9 +1,11 @@
 import * as z from 'zod';
 import minimist from 'minimist';
 import { applyType, getPackageJson, isNestedObject } from './utils';
-import { CommandOption, ConfigOptions } from './types';
+import { CommandOption, ConfigInputs, ConfigOptions } from './types';
 import { isString } from 'lodash';
 import { optionsHelp } from './render';
+import ConfigError from './config-error';
+import { ZodSchema, ZodType } from 'zod';
 
 export const autoConfig = function <
   TInput extends { [K in keyof TInput]: CommandOption }
@@ -13,15 +15,19 @@ export const autoConfig = function <
     caseSensitive: false,
   }
 ) {
-  const commandOptions = getRawConfigObject(config, options);
-  const schemaObject = verifySchema(config, commandOptions);
+  let { cliArgs, envKeys } = extractEnvArgs(options);
+
+  checkSpecialArgs(cliArgs, config, options);
+
+  const schemaObject = buildSchema(config);
+  const commandOptions = getRawConfigObject(config, {cliArgs, envKeys});
+  const {data} = verifySchema(schemaObject, commandOptions, {cliArgs, envKeys});
 
   return commandOptions;
 };
 
-function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
+function buildSchema<TInput extends { [K in keyof TInput]: CommandOption }>(
   config: TInput,
-  commandOptions: Record<string, unknown>
 ) {
   const schemaObject = z.object(
     Object.entries<CommandOption>(config).reduce(
@@ -33,30 +39,29 @@ function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
       {} as { [K in keyof TInput]: ReturnType<typeof getOptionSchema> }
     )
   );
-
+return schemaObject;
+    }
+function verifySchema(
+  schema: ReturnType<typeof buildSchema>,
+  config: Record<string, unknown>,
+  inputs: ConfigInputs
+): Record<string, unknown> {
   // verify schema
-  const parseResults = schemaObject.safeParse(commandOptions);
+  const parseResults = schema.safeParse(config);
   if (!parseResults.success) {
-    throw new Error(
-      `Config Error! Check your config, arguments and env vars! ${parseResults.error.toString()}`
+    throw new ConfigError(
+      `Config Error! Check your config, arguments and env vars! ${parseResults.error.toString()}`,
+      inputs,
+      parseResults.error
     );
   }
-  return schemaObject;
+  return parseResults.data;
 }
 
 function getRawConfigObject<
   TInput extends { [K in keyof TInput]: CommandOption }
->(config: TInput, options: ConfigOptions) {
-  let cliArgs = options._overrideArg || minimist(process.argv.slice(2));
-  let envKeys = options._overrideEnv || process.env;
-
-  if (!options.caseSensitive) {
-    cliArgs = normalizeObjectKeys(cliArgs) as minimist.ParsedArgs;
-    envKeys = normalizeObjectKeys(envKeys) as NodeJS.ProcessEnv;
-    console.log('caseSensitive is false, keys are now lowercase', cliArgs, envKeys);
-  }
-
-  checkSpecialArgs(cliArgs, config, options);
+>(config: TInput, input: ConfigInputs) {
+  const { cliArgs, envKeys } = input;
 
   type Keys = keyof TInput;
 
@@ -87,6 +92,18 @@ function getRawConfigObject<
     }
   );
   return commandOptions;
+}
+
+function extractEnvArgs(options: ConfigOptions) {
+  let cliArgs = options._overrideArg || minimist(process.argv.slice(2));
+  let envKeys = options._overrideEnv || process.env;
+
+  if (!options.caseSensitive) {
+    cliArgs = normalizeObjectKeys(cliArgs) as minimist.ParsedArgs;
+    envKeys = normalizeObjectKeys(envKeys) as NodeJS.ProcessEnv;
+    console.log('caseSensitive is false, keys are now lowercase', cliArgs, envKeys);
+  }
+  return { cliArgs, envKeys };
 }
 
 function normalizeObjectKeys<TInput>(

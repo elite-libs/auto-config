@@ -14,6 +14,7 @@ describe('autoConfig core functionality', () => {
         },
       },
       {
+        caseSensitive: false,
         _overrideEnv: {
           NODE_ENV: 'development',
           PORT: '8080',
@@ -72,7 +73,7 @@ describe('autoConfig core functionality', () => {
       {
         port: {
           help: 'The port to listen on.',
-          keys: ['port'],
+          keys: ['PORT'],
           type: 'number',
           required: true,
         },

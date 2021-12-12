@@ -82,6 +82,17 @@ export type ExtractOptionType<T> = T extends { type: 'string' }
   ? string[] | null
   : undefined;
 
+export type ConfigInputs = {
+  cliArgs: minimist.ParsedArgs;
+  envKeys: NodeJS.ProcessEnv;
+};
+
+export type ConfigState = {
+  input: ConfigInputs;
+  inputArgKeys: string[];
+  inputEnvKeys: string[];
+}
+
 export type ConfigResults<TConfig extends { [K in keyof TConfig]: any }> = {
   [K in keyof TConfig]?: ExtractOptionType<TConfig[K]>;
 };
