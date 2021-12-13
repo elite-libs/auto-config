@@ -5,7 +5,7 @@
 export default xConfig({
   port: {
     doc: 'The port to listen on.',
-    keys: ['port', 'PORT'],
+    keys: ['port'],
     type: 'number',
     required: true,
   },
@@ -18,4 +18,3 @@ export default xConfig({
 });
 
 ```
-
