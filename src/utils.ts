@@ -37,3 +37,19 @@ export async function getPackageJson(currentDir: string = __dirname) {
   const pkg = await (fs.readFile(`${packageRootPath}/package.json`, 'utf8').catch(console.error));
   return typeof pkg ==='string' ? JSON.parse(pkg) : null;
 }
+
+// function getFormattedZodError(error: ZodError) {
+//   return `${error.message} at ${error.stack}\n\n` + error.errors.map(error => {
+//     return `${error.path.join('.')}: ${error.message}.`;
+//   }).join(' ');
+// }
+
+export function cleanupStringList(list: Array<string | undefined | null> | string[] | string | undefined | null, transformFn = (input: string) => input) {
+  list = Array.isArray(list) ? list : [list];
+  let processed = list.filter(v => v != null).map(item => transformFn(item!)) as string[];
+  processed = [...new Set(processed)];
+  return processed as string[];
+}
+
+export const lowerCase = (s: string) => s != null && s.toLowerCase() || '';
+

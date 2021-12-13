@@ -12,13 +12,22 @@ describe('autoConfig core functionality', () => {
           type: 'number',
           required: true,
         },
+        debugMode: {
+          keys: 'debugMode',
+          type: 'boolean',
+        },
       },
       {
         caseSensitive: false,
         _overrideEnv: {
           NODE_ENV: 'development',
           PORT: '8080',
+          debugMode: 'true',
         },
+        _overrideArg: {
+          _: [],
+          debugMode: 'true',
+        }
       }
     );
     expect(config.port).toBe(8080);
@@ -41,6 +50,30 @@ describe('autoConfig core functionality', () => {
         _overrideArg: {
           PORT: '8080',
           _: [],
+        },
+      }
+    );
+    expect(config.port).toBe(8080);
+  });
+
+  test('loads argument flags', () => {
+    const config = autoConfig(
+      {
+        port: {
+          help: 'The port to listen on.',
+          argKeys: 'port',
+          flag: 'p',
+          type: 'number',
+          max: 65535,
+          gte: 1,
+          required: true,
+        },
+      },
+      {
+        _overrideEnv: { NODE_ENV: 'development' },
+        _overrideArg: {
+          _: [],
+          p: '8080',
         },
       }
     );
@@ -85,53 +118,76 @@ describe('autoConfig core functionality', () => {
           PORT: '8080',
         },
         _overrideArg: { _: [] },
-
-      },
+      }
     );
     expect(config.port).toBe(8080);
   });
 });
 
+test('ignores env case sensitivity (port === PORT)', () => {
+  const config = autoConfig(
+    {
+      port: {
+        help: 'The port to listen on.',
+        keys: ['PORT'],
+        type: 'number',
+        required: true,
+      },
+    },
+    {
+      caseSensitive: false,
+      _overrideEnv: {
+        NODE_ENV: 'development',
+      },
+      _overrideArg: {
+        PORT: '8080',
+        _: [],
+      },
+    }
+  );
+  expect(config.port).toBe(8080);
+});
+
 describe('validates config runtime rules', () => {
   test('detects invalid string length', () => {
-    expect(() => autoConfig(
-      {
-        env: {
-          help: 'Development or Production Environment',
-          keys: ['NODE_ENV'],
-          type: 'string',
-          min: 6
+    expect(() =>
+      autoConfig(
+        {
+          env: {
+            help: 'Development or Production Environment',
+            keys: ['NODE_ENV'],
+            type: 'string',
+            min: 6,
+          },
         },
-      },
-      {
-        _overrideEnv: {
-          NODE_ENV: 'dev',
-        },
-      }
-    )).toThrow();
+        {
+          _overrideEnv: {
+            NODE_ENV: 'dev',
+          },
+        }
+      )
+    ).toThrow();
   });
-})
-
+});
 
 describe('advanced field processing', () => {
   test('parses csv strings into array fields', () => {
-    expect(() => autoConfig(
-      {
-        env: {
-          help: 'Development or Production Environment',
-          keys: ['NODE_ENV'],
-          type: 'string',
-          min: 6
+    expect(() =>
+      autoConfig(
+        {
+          env: {
+            help: 'Development or Production Environment',
+            keys: ['NODE_ENV'],
+            type: 'string',
+            min: 6,
+          },
         },
-      },
-      {
-        _overrideEnv: {
-          NODE_ENV: 'dev',
-
-        },
-      }
-    )).toThrow();
+        {
+          _overrideEnv: {
+            NODE_ENV: 'dev',
+          },
+        }
+      )
+    ).toThrow();
   });
-})
-
-
+});

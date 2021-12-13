@@ -1,11 +1,16 @@
 import * as z from 'zod';
 import minimist from 'minimist';
-import { applyType, getPackageJson, isNestedObject } from './utils';
+import {
+  applyType,
+  cleanupStringList,
+  getPackageJson,
+  isNestedObject,
+  lowerCase,
+} from './utils';
 import { CommandOption, ConfigInputs, ConfigOptions } from './types';
 import { isString } from 'lodash';
 import { optionsHelp } from './render';
 import ConfigError from './config-error';
-import { ZodSchema, ZodType } from 'zod';
 
 export const autoConfig = function <
   TInput extends { [K in keyof TInput]: CommandOption }
@@ -17,17 +22,46 @@ export const autoConfig = function <
 ) {
   let { cliArgs, envKeys } = extractEnvArgs(options);
 
+  if (!options.caseSensitive) {
+    // convert all keys properties to lowercase
+    for (let key in config) {
+      // @ts-ignore
+      config[key] = normalizeConfigKeys(config[key], options);
+    }
+  }
   checkSpecialArgs(cliArgs, config, options);
 
   const schemaObject = buildSchema(config);
-  const commandOptions = getRawConfigObject(config, {cliArgs, envKeys});
-  const {data} = verifySchema(schemaObject, commandOptions, {cliArgs, envKeys});
+  const commandOptions = assembleConfigResults(config, { cliArgs, envKeys });
+  // @ts-ignore
+  const { data } = verifySchema(schemaObject, commandOptions, {
+    cliArgs,
+    envKeys,
+  });
 
   return commandOptions;
 };
 
-function buildSchema<TInput extends { [K in keyof TInput]: CommandOption }>(
-  config: TInput,
+function normalizeConfigKeys(config: CommandOption, options: ConfigOptions) {
+  let { keys, flag, argKeys, envKeys } = config;
+  config.keys = cleanupStringList(
+    keys,
+    !options.caseSensitive ? lowerCase : undefined
+  );
+  config.flag = cleanupStringList(flag);
+  config.argKeys = cleanupStringList(
+    argKeys,
+    !options.caseSensitive ? lowerCase : undefined
+  );
+  config.envKeys = cleanupStringList(
+    envKeys,
+    !options.caseSensitive ? lowerCase : undefined
+  );
+  return config;
+}
+
+function buildSchema<TInput extends ReturnType<typeof assembleConfigResults>>(
+  config: TInput
 ) {
   const schemaObject = z.object(
     Object.entries<CommandOption>(config).reduce(
@@ -39,15 +73,16 @@ function buildSchema<TInput extends { [K in keyof TInput]: CommandOption }>(
       {} as { [K in keyof TInput]: ReturnType<typeof getOptionSchema> }
     )
   );
-return schemaObject;
-    }
-function verifySchema(
+  return schemaObject;
+}
+function verifySchema<TInput>(
   schema: ReturnType<typeof buildSchema>,
-  config: Record<string, unknown>,
+  config: { [K in keyof TInput]: CommandOption },
   inputs: ConfigInputs
 ): Record<string, unknown> {
   // verify schema
   const parseResults = schema.safeParse(config);
+  // console.log(config);
   if (!parseResults.success) {
     throw new ConfigError(
       `Config Error! Check your config, arguments and env vars! ${parseResults.error.toString()}`,
@@ -58,7 +93,7 @@ function verifySchema(
   return parseResults.data;
 }
 
-function getRawConfigObject<
+function assembleConfigResults<
   TInput extends { [K in keyof TInput]: CommandOption }
 >(config: TInput, input: ConfigInputs) {
   const { cliArgs, envKeys } = input;
@@ -101,7 +136,6 @@ function extractEnvArgs(options: ConfigOptions) {
   if (!options.caseSensitive) {
     cliArgs = normalizeObjectKeys(cliArgs) as minimist.ParsedArgs;
     envKeys = normalizeObjectKeys(envKeys) as NodeJS.ProcessEnv;
-    console.log('caseSensitive is false, keys are now lowercase', cliArgs, envKeys);
   }
   return { cliArgs, envKeys };
 }
@@ -152,7 +186,7 @@ function getOptionSchema({
   // @ts-ignore
   if (opt.default != null) zType = zType.default(opt.default);
   // @ts-ignore
-  if (!opt.required) zType = zType.optional();
+  if (!opt.required && !('min' in opt)) zType = zType.optional();
 
   if ('min' in opt && 'min' in zType) zType = zType.min(opt.min!);
   if ('max' in opt && 'max' in zType) zType = zType.max(opt.min!);
@@ -173,21 +207,26 @@ function getOptionValue({
   inputCliArgs: minimist.ParsedArgs;
   inputEnvKeys: NodeJS.ProcessEnv;
 }) {
-  let { keys, argKeys, envKeys } = commandOption;
+  let { keys, argKeys, envKeys, flag } = commandOption;
   keys = Array.isArray(keys) ? keys : ([keys] as string[]);
+  flag = Array.isArray(flag) ? flag : ([flag] as string[]);
   argKeys = Array.isArray(argKeys) ? argKeys : ([argKeys] as string[]);
   envKeys = Array.isArray(envKeys) ? envKeys : ([envKeys] as string[]);
 
-  const argNameMatch = [...keys, ...argKeys].find(
+  const argNameMatch = [...keys, ...argKeys, ...flag].find(
     (key) => typeof key === 'string' && inputCliArgs[key]
   );
-  const matchingArg = isString(argNameMatch) ? inputCliArgs[argNameMatch] : null;
+  const matchingArg = isString(argNameMatch)
+    ? inputCliArgs[argNameMatch]
+    : null;
   if (matchingArg) return applyType(matchingArg, commandOption.type);
 
   const envKeyMatch = [...keys, ...envKeys].find(
     (key) => typeof key === 'string' && inputEnvKeys[key]
   );
-  const matchingEnv = isString(envKeyMatch) ? envKeys[envKeyMatch as any] : null;
+  const matchingEnv = isString(envKeyMatch)
+    ? inputEnvKeys[envKeyMatch as any]
+    : null;
   if (matchingEnv) return applyType(matchingEnv, commandOption.type);
 
   if (commandOption.default != null)
