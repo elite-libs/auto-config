@@ -1,4 +1,4 @@
-import minimist from 'minimist';
+import minimist from "minimist";
 
 /**
  * CommandOption defines a system config parameter.
@@ -30,7 +30,7 @@ export type ConfigOptions = {
 export type OptionTypeConfig =
   | {
       // _type: string;
-      type: 'string';
+      type: "string";
       default?: string;
       transform?: (input: unknown) => string;
       min?: number;
@@ -38,7 +38,7 @@ export type OptionTypeConfig =
     }
   | {
       // _type: number;
-      type: 'number';
+      type: "number";
       default?: number;
       transform?: (input: unknown) => number;
       min?: number;
@@ -51,51 +51,58 @@ export type OptionTypeConfig =
     }
   | {
       // _type: boolean;
-      type: 'boolean';
+      type: "boolean";
       default?: boolean;
       transform?: (input: unknown) => boolean;
     }
   | {
       // _type: Date;
-      type: 'date';
+      type: "date";
       default?: Date;
       transform?: (input: unknown) => Date;
     }
   | {
       // _type: string[];
-      type: 'array';
+      type: "array";
       default?: any[];
       transform?: (input: unknown) => string[];
       min?: number;
       max?: number;
     };
 
-export type ExtractOptionType<T> = T extends { type: 'string' }
-  ? string | null
-  : T extends { type: 'number' }
-  ? number | null
-  : T extends { type: 'boolean' }
-  ? boolean | null
-  : T extends { type: 'Date' }
-  ? Date | null
-  : T extends { type: 'array' }
-  ? string[] | null
-  : undefined;
-
 export type ConfigInputs = {
   cliArgs: minimist.ParsedArgs;
   envKeys: NodeJS.ProcessEnv;
+  originalArgs: Record<string, string | boolean | number | Date>;
 };
 
 export type ConfigState = {
   input: ConfigInputs;
   inputArgKeys: string[];
   inputEnvKeys: string[];
-}
-
-export type ConfigResults<TConfig extends { [K in keyof TConfig]: any }> = {
-  [K in keyof TConfig]?: ExtractOptionType<TConfig[K]>;
 };
+
+export type ConfigResults<
+  TConfig extends { [K in keyof TConfig]: CommandOption }
+> = {
+  [K in keyof TConfig]: TConfig[K]["required"] extends true
+    ? NonNullable<GetTypeByTypeString<TConfig[K]["type"]>>
+    : Nullable<GetTypeByTypeString<TConfig[K]["type"]>>;
+};
+
+export type Nullable<T> = T | null | undefined;
+
+export type GetTypeByTypeString<TType extends string> = TType extends "string"
+  ? string
+  : TType extends "number"
+  ? number
+  : TType extends "array"
+  ? string[]
+  : TType extends "boolean"
+  ? boolean
+  : TType extends "date"
+  ? Date
+  : unknown;
 
 // export type ConfigResults<TConfig extends { [K in keyof TConfig]: any }> = {
 //   [K in keyof TConfig]?: TConfig[K] extends { _type: string } ? string : any;

@@ -25,6 +25,7 @@ export default class ConfigError<
     }
     return `${this.name}: ${this.message} ` + fieldErrors;
   }
+  
   toJSON() {
     return {
       name: this.name,

@@ -1,54 +1,62 @@
-import { autoConfig } from './index';
+import { autoConfig } from "./index";
 
-// console.log(process.cwd());
+const processExitSpy = jest
+  .spyOn(process, "exit")
+  // @ts-ignore
+  .mockImplementation((code?: number) => void null);
 
-describe('autoConfig core functionality', () => {
-  test('loads environment variables', () => {
+beforeEach(() => {
+  processExitSpy.mockClear();
+});
+describe("autoConfig core functionality", () => {
+  test("loads environment variables", () => {
     const config = autoConfig(
       {
         port: {
-          help: 'The port to listen on.',
-          keys: ['port', 'PORT'],
-          type: 'number',
+          help: "The port to listen on.",
+          keys: ["port", "PORT"],
+          type: "number",
           required: true,
         },
         debugMode: {
-          keys: ['debug', 'DEBUG', 'debugMode', 'DEBUG_MODE'],
-          type: 'boolean',
+          keys: ["debug", "DEBUG", "debugMode", "DEBUG_MODE"],
+          type: "boolean",
+          default: false,
         },
       },
       {
         caseSensitive: false,
         _overrideEnv: {
-          NODE_ENV: 'development',
-          PORT: '8080',
-          debugMode: 'true',
+          NODE_ENV: "development",
+          PORT: "8080",
+          debugMode: "true",
         },
         _overrideArg: {
           _: [],
-          debugMode: 'true',
-        }
+          debugMode: "true",
+        },
       }
     );
     expect(config.port).toBe(8080);
+    expect(config.debugMode).toBe(true);
   });
 
-  test('loads argument variables', () => {
+  test("loads argument variables", () => {
     const config = autoConfig(
       {
         port: {
-          help: 'The port to listen on.',
-          argKeys: ['port', 'PORT'],
-          type: 'number',
+          help: "The port to listen on.",
+          argKeys: ["port", "PORT"],
+          type: "number",
           required: true,
         },
       },
       {
         _overrideEnv: {
-          NODE_ENV: 'development',
+          NODE_ENV: "development",
         },
         _overrideArg: {
-          PORT: '8080',
+          PORT: "8080",
           _: [],
         },
       }
@@ -56,138 +64,141 @@ describe('autoConfig core functionality', () => {
     expect(config.port).toBe(8080);
   });
 
-  test('loads argument flags', () => {
+  test("loads argument flags", () => {
     const config = autoConfig(
       {
         port: {
-          help: 'The port to listen on.',
-          argKeys: 'port',
-          flag: 'p',
-          type: 'number',
+          help: "The port to listen on.",
+          argKeys: "port",
+          flag: "p",
+          type: "number",
           max: 65535,
           gte: 1,
           required: true,
         },
       },
       {
-        _overrideEnv: { NODE_ENV: 'development' },
+        _overrideEnv: { NODE_ENV: "development" },
         _overrideArg: {
           _: [],
-          p: '8080',
+          p: "8080",
         },
       }
     );
     expect(config.port).toBe(8080);
   });
 
-  test('throws on missing variable', () => {
-    expect(() =>
-      autoConfig(
-        {
-          port: {
-            help: 'The port to listen on.',
-            keys: ['port', 'PORT'],
-            type: 'number',
-            required: true,
-          },
+  test("throws on missing variable", () => {
+    autoConfig(
+      {
+        port: {
+          help: "The port to listen on.",
+          keys: ["port", "PORT"],
+          type: "number",
+          required: true,
         },
-        {
-          _overrideEnv: {
-            NODE_ENV: 'development',
-          },
-          _overrideArg: { _: [] },
-        }
-      )
-    ).toThrow();
+      },
+      {
+        _overrideEnv: {
+          NODE_ENV: "development",
+        },
+        _overrideArg: { _: [] },
+      }
+    );
+    expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('ignores case sensitivity (port === PORT)', () => {
+  test("ignores case sensitivity (port === PORT)", () => {
     const config = autoConfig(
       {
         port: {
-          help: 'The port to listen on.',
-          keys: ['PORT'],
-          type: 'number',
+          help: "The port to listen on.",
+          keys: ["PORT"],
+          type: "number",
           required: true,
         },
       },
       {
         caseSensitive: false,
         _overrideEnv: {
-          NODE_ENV: 'development',
-          PORT: '8080',
+          NODE_ENV: "development",
+          PORT: "8080",
         },
         _overrideArg: { _: [] },
       }
     );
     expect(config.port).toBe(8080);
+    expect(processExitSpy).toHaveBeenCalledTimes(0);
   });
 });
 
-test('ignores env case sensitivity (port === PORT)', () => {
+test("ignores env case sensitivity (port === PORT)", () => {
   const config = autoConfig(
     {
       port: {
-        help: 'The port to listen on.',
-        keys: ['PORT'],
-        type: 'number',
+        help: "The port to listen on.",
+        keys: ["PORT"],
+        type: "number",
         required: true,
       },
     },
     {
       caseSensitive: false,
       _overrideEnv: {
-        NODE_ENV: 'development',
+        NODE_ENV: "development",
       },
       _overrideArg: {
-        PORT: '8080',
+        PORT: "8080",
         _: [],
       },
     }
   );
   expect(config.port).toBe(8080);
+  expect(processExitSpy).toHaveBeenCalledTimes(0);
 });
 
-describe('validates config runtime rules', () => {
-  test('detects invalid string length', () => {
+describe("validates config runtime rules", () => {
+  test("detects invalid string length", () => {
     expect(() =>
       autoConfig(
         {
           env: {
-            help: 'Development or Production Environment',
-            keys: ['NODE_ENV'],
-            type: 'string',
+            help: "Development or Production Environment",
+            keys: ["NODE_ENV"],
+            type: "string",
             min: 6,
           },
         },
         {
           _overrideEnv: {
-            NODE_ENV: 'dev',
+            NODE_ENV: "dev",
           },
         }
       )
     ).toThrow();
+    expect(processExitSpy).toHaveBeenCalledTimes(1);
   });
 });
 
-describe('advanced field processing', () => {
-  test('parses csv strings into array fields', () => {
+describe("advanced field processing", () => {
+  test("parses csv strings into array fields", () => {
     expect(() =>
       autoConfig(
         {
           env: {
-            help: 'Development or Production Environment',
-            keys: ['NODE_ENV'],
-            type: 'string',
+            help: "Development or Production Environment",
+            keys: ["NODE_ENV"],
+            type: "string",
             min: 6,
           },
         },
         {
           _overrideEnv: {
-            NODE_ENV: 'dev',
+            NODE_ENV: "dev",
           },
         }
       )
     ).toThrow();
+    expect(processExitSpy).toHaveBeenCalledTimes(1);
   });
 });

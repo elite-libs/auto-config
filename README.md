@@ -31,6 +31,7 @@ export default autoConfig({
     type: 'boolean',
     cliKeys: 'debug',
     flag: 'D',
+    default: false,
   },
 });
 ```
@@ -73,11 +74,11 @@ node ./app.js --port 8080 --debug
 # Error: databaseUrl is required.
 ```
 
-### TODO
+### Tasks
 
-- [ ] Auto `--help` output.
-- [ ] `--version` output.
 - [ ] Enum support.
+- [x] Auto `--help` output.
+- [x] `--version` output.
 - [x] `default` values.
 - [x] `required` values.
 - [x] Zod validators for `optional`, `min`, `max`, `gt`, `gte`, `lt`, `lte`.
@@ -85,6 +86,7 @@ node ./app.js --port 8080 --debug
 ### Ideas
 
 - [ ] Restrict `arg` or `env` value with string prefix on `keys` array.
+- [ ] Support inverting boolean flags with `--no-debug` versus `--debug`.
 
 ### Credit & References
 
