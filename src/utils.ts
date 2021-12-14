@@ -63,3 +63,11 @@ export function cleanupStringList(
 }
 
 export const lowerCase = (s: string) => (s != null && s.toLowerCase()) || "";
+
+export const termMarkup = {
+  // https://github.com/cronvel/terminal-kit/blob/master/doc/markup.md
+  italic: (str: string) => `^/${str}^`,
+  dim: (str: string) => `^-${str}^`,
+  bold: (str: string) => `^+${str}^`,
+  reset: () => `^:`,
+}

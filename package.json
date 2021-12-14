@@ -1,7 +1,7 @@
 {
   "name": "@justsml/auto-config",
   "description": "A Unified Config & Arguments Library for Node.js. Featuring support for environment variables, command line arguments, and JSON files!",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "commonjs",
   "private": false,
   "packageManager": "yarn@1.10.0",
@@ -40,6 +40,7 @@
     "@types/lodash": "^4.14.178",
     "@types/minimist": "^1.2.2",
     "@types/node": "^16.11.12",
+    "@types/terminal-kit": "^1.28.4",
     "jest": "^26.6.0",
     "ts-jest": "^26.5.0",
     "ts-node": "^10.4.0",
@@ -49,6 +50,7 @@
     "console-table-printer": "^2.10.0",
     "lodash": "^4.17.21",
     "minimist": "^1.2.5",
+    "terminal-kit": "^2.3.0",
     "zod": "^3.11.6"
   },
   "files": [

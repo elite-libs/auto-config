@@ -1,5 +1,20 @@
-import { Table } from 'console-table-printer';
-import type { CommandOption, ConfigOptions } from './types';
+import type { CommandOption, ConfigOptions } from "./types";
+import tk from "terminal-kit";
+import { termMarkup } from "./utils";
+
+const { terminal } = tk;
+
+const formatName = (name: string, opt: CommandOption) => {
+  // https://github.com/cronvel/terminal-kit/blob/master/doc/markup.md
+  const { required, default: defaultValue } = opt;
+
+  if (defaultValue !== undefined) {
+    return termMarkup.italic(`[${name}]`) + `=${termMarkup.dim(JSON.stringify(defaultValue))}`;
+  }
+  if (!required) return termMarkup.italic(`[${name}]`);
+
+  return termMarkup.bold(`${name}*`);
+}
 
 export const optionsHelp = function <
   TInput extends { [K in keyof TInput]: CommandOption }
@@ -26,18 +41,31 @@ export const optionsHelp = function <
       };
     }
   );
-  const table = new Table({
-    title: 'Options',
-    columns: [
-      { name: 'name', alignment: 'left' },
-      { name: 'help', alignment: 'left' },
-      { name: 'required', alignment: 'right', color: 'red', maxLen: 5 },
-      { name: 'keys', alignment: 'right', minLen: 20 },
-    ]
-  })
 
-  table.addRows(configArray);
-  return table.render()
+  // @ts-ignore
+  terminal.table(
+    [
+      ["Name", "Help", "Keys (Env + Cli Args Mapping)"].map(s => `\  ${termMarkup.bold(s)}\n\n`),
+      ...configArray.map(({ name, help, keys }) => [
+        formatName(name, config[name as keyof TInput]),
+        help,
+        keys,
+      ]),
+    ],
+    {
+      hasBorder: true,
+      contentHasMarkup: true,
+      borderChars: "lightRounded",
+      borderAttr: { color: "white" },
+      textAttr: { bgColor: "default" },
+      // firstCellTextAttr: { bgColor: "blue" },
+      firstRowTextAttr: { bgColor: "blue", height: 90} ,
+      // firstColumnTextAttr: { bgColor: "red" },
+      width: terminal.width,
+      expandToWidth: true,
+      fit: true, // Activate all expand/shrink + wordWrap
+    }
+  );
 };
 
 const renderKeys = ({
@@ -51,15 +79,26 @@ const renderKeys = ({
   envKeys: string[];
   argKeys: string[];
 }) => {
-  const argEnvKeys = keys.join(', ');
+  const argEnvKeys = keys.join(", ");
   const argsFormatted = [...flag, ...argKeys]
     .map((key) => (key.length === 1 ? `-${key}` : `--${key}`))
-    .join(' | ');
+    .join(" | ");
   const envFormatted = [...envKeys, ...argKeys]
     .map((key) => `${key}`)
-    .join(' | ');
+    .join(" | ");
 
-    return `any: ${argEnvKeys}
+  return `any: ${argEnvKeys}
 arg: ${argsFormatted}
 env: ${envFormatted}`;
 };
+
+// declare namespace Terminal {
+//   interface  TextTableOptions {
+
+//   }
+
+//   interface Impl {
+//     table(tableCells: string[][], textTableOptions?: TextTableOptions): void;
+
+//   }
+// }
