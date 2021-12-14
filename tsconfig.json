@@ -22,7 +22,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2019",
+    "target": "es6",
     "useUnknownInCatchVariables": false
   },
   "include": [

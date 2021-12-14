@@ -1,41 +1,47 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import isObject from 'lodash/isObject';
-import keys from 'lodash/keys';
-import type { OptionTypeConfig } from './types';
+import fs from "fs";
+import path from "path";
+import isObject from "lodash/isObject";
+import keys from "lodash/keys";
+import type { OptionTypeConfig } from "./types";
 
 export function toBoolean(value: any) {
   value = value.toString().toLowerCase();
-  return value === 'true' || value === 'yes' || value === 'y' || value === '1';
+  return value === "true" || value === "yes" || value === "y" || value === "1";
 }
 export function isNestedObject(obj: unknown) {
   return isObject(obj) && !Array.isArray(obj) && keys(obj).length > 0;
 }
 
-export function applyType(value: string, type: OptionTypeConfig['type']) {
+export function applyType(value: string, type: OptionTypeConfig["type"]) {
   switch (type) {
-    case 'string':
+    case "string":
       return value;
-    case 'number':
+    case "number":
       return parseInt(value);
-    case 'boolean':
+    case "boolean":
       return toBoolean(value);
-    case 'array':
-      return value.split(',');
+    case "array":
+      return value.split(",");
     // case 'object':
     //   return value as Record<string, unknown>;
-    }
-    return value;
+  }
+  return value;
 }
 
-export async function getPackageJson(currentDir: string = __dirname) {
-  let packageRootPath = currentDir;
+export function getPackageJson(currentDir: string = process.cwd()) {
+  let packageRootPath = process.cwd();
   while (/node_modules\//g.test(packageRootPath)) {
-    packageRootPath = path.resolve(currentDir, '..');
+    packageRootPath = path.resolve(currentDir, "..");
   }
-  console.error('packageRootPath', packageRootPath);
-  const pkg = await (fs.readFile(`${packageRootPath}/package.json`, 'utf8').catch(console.error));
-  return typeof pkg ==='string' ? JSON.parse(pkg) : null;
+  // console.error("packageRootPath", packageRootPath);
+  // console.error("process.cwd", process.cwd());
+  try {
+    const pkg = fs.readFileSync(`${packageRootPath}/package.json`, "utf8");
+    return typeof pkg === "string" ? JSON.parse(pkg) : null;
+  } catch (error) {
+    // console.error("error", error);
+    return null;
+  }
 }
 
 // function getFormattedZodError(error: ZodError) {
@@ -44,12 +50,16 @@ export async function getPackageJson(currentDir: string = __dirname) {
 //   }).join(' ');
 // }
 
-export function cleanupStringList(list: Array<string | undefined | null> | string[] | string | undefined | null, transformFn = (input: string) => input) {
+export function cleanupStringList(
+  list: Array<string | undefined | null> | string[] | string | undefined | null,
+  transformFn = (input: string) => input
+) {
   list = Array.isArray(list) ? list : [list];
-  let processed = list.filter(v => v != null).map(item => transformFn(item!)) as string[];
+  let processed = list
+    .filter((v) => v != null)
+    .map((item) => transformFn(item!)) as string[];
   processed = [...new Set(processed)];
   return processed as string[];
 }
 
-export const lowerCase = (s: string) => s != null && s.toLowerCase() || '';
-
+export const lowerCase = (s: string) => (s != null && s.toLowerCase()) || "";

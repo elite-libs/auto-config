@@ -13,7 +13,7 @@ describe('autoConfig core functionality', () => {
           required: true,
         },
         debugMode: {
-          keys: 'debugMode',
+          keys: ['debug', 'DEBUG', 'debugMode', 'DEBUG_MODE'],
           type: 'boolean',
         },
       },

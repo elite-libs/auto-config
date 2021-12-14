@@ -1,16 +1,16 @@
-import * as z from 'zod';
-import minimist from 'minimist';
+import * as z from "zod";
+import minimist from "minimist";
 import {
   applyType,
   cleanupStringList,
   getPackageJson,
   isNestedObject,
   lowerCase,
-} from './utils';
-import { CommandOption, ConfigInputs, ConfigOptions } from './types';
-import { isString } from 'lodash';
-import { optionsHelp } from './render';
-import ConfigError from './config-error';
+} from "./utils";
+import { CommandOption, ConfigInputs, ConfigOptions } from "./types";
+import { isString } from "lodash";
+import { optionsHelp } from "./render";
+import ConfigError from "./config-error";
 
 export const autoConfig = function <
   TInput extends { [K in keyof TInput]: CommandOption }
@@ -108,20 +108,20 @@ function assembleConfigResults<
           inputCliArgs: cliArgs,
           inputEnvKeys: envKeys,
         });
-        if (opt.type === 'string') conf[name as Keys] = v as any;
-        if (opt.type === 'number') conf[name as Keys] = v as any;
-        if (opt.type === 'boolean') conf[name as Keys] = v as any;
-        if (opt.type === 'array') conf[name as Keys] = v as any;
-        if (opt.type === 'date') conf[name as Keys] = new Date(v as any) as any;
+        if (opt.type === "string") conf[name as Keys] = v as any;
+        if (opt.type === "number") conf[name as Keys] = v as any;
+        if (opt.type === "boolean") conf[name as Keys] = v as any;
+        if (opt.type === "array") conf[name as Keys] = v as any;
+        if (opt.type === "date") conf[name as Keys] = new Date(v as any) as any;
       }
       return conf;
     },
     {} as {
-      [K in keyof TInput]?: TInput[K]['type'] extends 'string'
+      [K in keyof TInput]?: TInput[K]["type"] extends "string"
         ? string
-        : TInput[K]['type'] extends 'number'
+        : TInput[K]["type"] extends "number"
         ? number
-        : TInput[K]['type'] extends 'boolean'
+        : TInput[K]["type"] extends "boolean"
         ? boolean
         : any;
     }
@@ -160,17 +160,22 @@ function checkSpecialArgs(
   options: ConfigOptions
 ) {
   if (args.version) {
-    console.log(
-      getPackageJson(__dirname) ||
-        `No package.json found from path ${__dirname}`
-    );
-    process.exit(0);
+    const pkg = getPackageJson(process.cwd());
+    const version = pkg?.version || "unknown";
+
+    if (version) {
+      console.log("Version:", version);
+      process.exit(0);
+    }
+    console.error(`No package.json found from path ${__dirname}`);
+    process.exit(1);
   }
   if (args.help) {
     console.log(
       `
   Usage:
     --help, -h: Show this help message
+
 ${optionsHelp(config, options)}`
     );
     process.exit(0);
@@ -182,18 +187,18 @@ function getOptionSchema({
 }: {
   commandOption: CommandOption;
 }) {
-  let zType = opt.type === 'array' ? z[opt.type](z.any()) : z[opt.type]();
+  let zType = opt.type === "array" ? z[opt.type](z.any()) : z[opt.type]();
   // @ts-ignore
   if (opt.default != null) zType = zType.default(opt.default);
   // @ts-ignore
-  if (!opt.required && !('min' in opt)) zType = zType.optional();
+  if (!opt.required && !("min" in opt)) zType = zType.optional();
 
-  if ('min' in opt && 'min' in zType) zType = zType.min(opt.min!);
-  if ('max' in opt && 'max' in zType) zType = zType.max(opt.min!);
-  if ('gte' in opt && 'gte' in zType) zType = zType.gte(opt.min!);
-  if ('lte' in opt && 'lte' in zType) zType = zType.lte(opt.min!);
-  if ('gt' in opt && 'gt' in zType) zType = zType.gt(opt.min!);
-  if ('lt' in opt && 'lt' in zType) zType = zType.lt(opt.min!);
+  if ("min" in opt && "min" in zType) zType = zType.min(opt.min!);
+  if ("max" in opt && "max" in zType) zType = zType.max(opt.min!);
+  if ("gte" in opt && "gte" in zType) zType = zType.gte(opt.min!);
+  if ("lte" in opt && "lte" in zType) zType = zType.lte(opt.min!);
+  if ("gt" in opt && "gt" in zType) zType = zType.gt(opt.min!);
+  if ("lt" in opt && "lt" in zType) zType = zType.lt(opt.min!);
 
   return zType;
 }
@@ -214,7 +219,7 @@ function getOptionValue({
   envKeys = Array.isArray(envKeys) ? envKeys : ([envKeys] as string[]);
 
   const argNameMatch = [...keys, ...argKeys, ...flag].find(
-    (key) => typeof key === 'string' && inputCliArgs[key]
+    (key) => typeof key === "string" && inputCliArgs[key]
   );
   const matchingArg = isString(argNameMatch)
     ? inputCliArgs[argNameMatch]
@@ -222,7 +227,7 @@ function getOptionValue({
   if (matchingArg) return applyType(matchingArg, commandOption.type);
 
   const envKeyMatch = [...keys, ...envKeys].find(
-    (key) => typeof key === 'string' && inputEnvKeys[key]
+    (key) => typeof key === "string" && inputEnvKeys[key]
   );
   const matchingEnv = isString(envKeyMatch)
     ? inputEnvKeys[envKeyMatch as any]
