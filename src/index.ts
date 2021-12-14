@@ -40,10 +40,11 @@ export const autoConfig = function <
   debugLog('schemaObject', schemaObject);
 
   const commandOptions = assembleConfigResults(config, { cliArgs, envKeys, originalArgs });
-  // @ts-ignore
+  
   const results = verifySchema(schemaObject, commandOptions, {
     cliArgs,
     envKeys,
+    originalArgs,
   });
 
   return commandOptions;
@@ -82,9 +83,9 @@ function buildSchema<TInput extends { [K in keyof TInput]: CommandOption }>(
   );
   return schemaObject;
 }
-function verifySchema<TInput>(
+function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
   schema: ReturnType<typeof buildSchema>,
-  config: { [K in keyof TInput]: CommandOption },
+  config: ConfigResults<TInput>,
   inputs: ConfigInputs
 ): Record<string, unknown> {
   const debugLog = debug("auto-config:verifySchema");

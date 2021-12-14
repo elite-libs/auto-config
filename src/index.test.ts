@@ -5,8 +5,14 @@ const processExitSpy = jest
   // @ts-ignore
   .mockImplementation((code?: number) => void null);
 
+const consoleErrorSpy = jest
+  .spyOn(console, "error")
+  // @ts-ignore
+  .mockImplementation((...args: any[]) => void null);
+
 beforeEach(() => {
   processExitSpy.mockClear();
+  consoleErrorSpy.mockClear();
 });
 describe("autoConfig core functionality", () => {
   test("loads environment variables", () => {
@@ -105,7 +111,8 @@ describe("autoConfig core functionality", () => {
         _overrideArg: { _: [] },
       }
     );
-    expect(processExitSpy).toHaveBeenCalledWith(1);
+    expect(processExitSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
   });
 
   test("ignores case sensitivity (port === PORT)", () => {
@@ -159,46 +166,46 @@ test("ignores env case sensitivity (port === PORT)", () => {
 
 describe("validates config runtime rules", () => {
   test("detects invalid string length", () => {
-    expect(() =>
-      autoConfig(
-        {
-          env: {
-            help: "Development or Production Environment",
-            keys: ["NODE_ENV"],
-            type: "string",
-            min: 6,
-          },
+    autoConfig(
+      {
+        env: {
+          help: "Development or Production Environment",
+          keys: ["NODE_ENV"],
+          type: "string",
+          min: 6,
         },
-        {
-          _overrideEnv: {
-            NODE_ENV: "dev",
-          },
-        }
-      )
-    ).toThrow();
+      },
+      {
+        _overrideEnv: {
+          NODE_ENV: "dev",
+        },
+      }
+    );
+
     expect(processExitSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("advanced field processing", () => {
   test("parses csv strings into array fields", () => {
-    expect(() =>
-      autoConfig(
-        {
-          env: {
-            help: "Development or Production Environment",
-            keys: ["NODE_ENV"],
-            type: "string",
-            min: 6,
-          },
+    autoConfig(
+      {
+        env: {
+          help: "Development or Production Environment",
+          keys: ["NODE_ENV"],
+          type: "string",
+          min: 6,
         },
-        {
-          _overrideEnv: {
-            NODE_ENV: "dev",
-          },
-        }
-      )
-    ).toThrow();
+      },
+      {
+        _overrideEnv: {
+          NODE_ENV: "dev",
+        },
+      }
+    );
+
     expect(processExitSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
   });
 });
