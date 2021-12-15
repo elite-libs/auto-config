@@ -13,24 +13,21 @@
 import { autoConfig } from '@justsml/auto-config';
 
 export default autoConfig({
-  port: {
-    help: 'The port to listen on.',
-    keys: ['port'],
-    flag: 'p',
-    type: 'number',
-    required: true,
-  },
   databaseUrl: {
     help: 'The Postgres connection string.',
-    keys: ['databaseUrl', 'DATABASE_URL', 'DATABASE_URI'],
-    type: 'string',
+    args: ['--databaseUrl', '--db', 'DATABASE_URL'],
+    required: true,
+  },
+  port: {
+    help: 'The port to start server on.',
+    args: ['--port', '-p'],
+    type: 'number',
     required: true,
   },
   debugMode: {
     help: 'Debug mode.',
+    args: ['--debug', '-D'],
     type: 'boolean',
-    cliKeys: 'debug',
-    flag: 'D',
     default: false,
   },
 });
@@ -39,7 +36,6 @@ export default autoConfig({
 ```ts
 // `./src/app.js`
 import config from './config';
-
 console.log(config);
 ```
 
@@ -63,7 +59,7 @@ DATABASE_URL=postgres://localhost/postgres \
 Single letter flag arguments.
 
 ```bash
-node ./app.js --port 8080 --databaseUrl 'postgres://localhost/postgres' --debug
+node ./app.js --port 8080 --databaseUrl 'postgres://localhost/postgres' -D
 # { port: 8080, databaseUrl: 'postgres://localhost/postgres', debug: true }
 ```
 
@@ -85,7 +81,6 @@ node ./app.js --port 8080 --debug
 
 ### Ideas
 
-- [ ] Restrict `arg` or `env` value with string prefix on `keys` array.
 - [ ] Support inverting boolean flags with `--no-debug` versus `--debug`.
 
 ### Credit & References

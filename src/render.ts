@@ -1,43 +1,35 @@
-import type { CommandOption, ConfigOptions } from "./types";
-import tk from "terminal-kit";
-import { termMarkup } from "./utils";
+import type { CommandOption } from './types';
+import tk from 'terminal-kit';
+import { termMarkup } from './utils';
 
 const { terminal } = tk;
 
 const formatName = (name: string, opt: CommandOption) => {
-  // https://github.com/cronvel/terminal-kit/blob/master/doc/markup.md
   const { required, default: defaultValue } = opt;
 
   if (defaultValue !== undefined) {
-    return termMarkup.italic(`[${name}]`) + `=${termMarkup.dim(JSON.stringify(defaultValue))}`;
+    return (
+      termMarkup.italic(`[${name}]`) +
+      ` = ${termMarkup.dim(JSON.stringify(defaultValue))}`
+    );
   }
   if (!required) return termMarkup.italic(`[${name}]`);
 
   return termMarkup.bold(`${name}*`);
-}
+};
 
 export const optionsHelp = function <
   TInput extends { [K in keyof TInput]: CommandOption }
->(
-  config: TInput,
-  options: ConfigOptions = {
-    caseSensitive: false,
-  }
-) {
+>(config: TInput) {
   const configArray = Object.entries<CommandOption>(config).map(
     ([key, value]) => {
-      let { help, keys, flag, envKeys, argKeys, required } = value;
-      keys = keys == null ? [] : Array.isArray(keys) ? keys : [keys];
-      flag = flag == null ? [] : Array.isArray(flag) ? flag : [flag];
-      envKeys =
-        envKeys == null ? [] : Array.isArray(envKeys) ? envKeys : [envKeys];
-      argKeys =
-        argKeys == null ? [] : Array.isArray(argKeys) ? argKeys : [argKeys];
+      let { help, args, required } = value;
+      args = args == null ? [] : Array.isArray(args) ? args : [args];
       return {
         name: key,
         help,
         required,
-        keys: renderKeys({ keys, flag, envKeys, argKeys }),
+        args: args.concat().sort(),
       };
     }
   );
@@ -45,21 +37,25 @@ export const optionsHelp = function <
   // @ts-ignore
   terminal.table(
     [
-      ["Name", "Help", "Keys (Env + Cli Args Mapping)"].map(s => `\  ${termMarkup.bold(s)}\n\n`),
-      ...configArray.map(({ name, help, keys }) => [
+      ['Name', 'Help', 'CLI Args, Env Name(s)'].map(
+        (s) => `\n  ${termMarkup.bold(s)}\n\n`
+      ),
+      ...configArray.map(({ name, help, args }) => [
         formatName(name, config[name as keyof TInput]),
         help,
-        keys,
+        args,
       ]),
+      ['help', 'Show this help.', '--help'],
+      ['version', 'Show the current version.', '--version'],
     ],
     {
       hasBorder: true,
       contentHasMarkup: true,
-      borderChars: "lightRounded",
-      borderAttr: { color: "white" },
-      textAttr: { bgColor: "default" },
+      borderChars: 'lightRounded',
+      borderAttr: { color: 'white' },
+      textAttr: { bgColor: 'default' },
       // firstCellTextAttr: { bgColor: "blue" },
-      firstRowTextAttr: { bgColor: "blue", height: 90} ,
+      firstRowTextAttr: { bgColor: 'blue', height: 90 },
       // firstColumnTextAttr: { bgColor: "red" },
       width: terminal.width,
       expandToWidth: true,
@@ -67,38 +63,3 @@ export const optionsHelp = function <
     }
   );
 };
-
-const renderKeys = ({
-  keys,
-  flag,
-  envKeys,
-  argKeys,
-}: {
-  keys: string[];
-  flag: string[];
-  envKeys: string[];
-  argKeys: string[];
-}) => {
-  const argEnvKeys = keys.join(", ");
-  const argsFormatted = [...flag, ...argKeys]
-    .map((key) => (key.length === 1 ? `-${key}` : `--${key}`))
-    .join(" | ");
-  const envFormatted = [...envKeys, ...argKeys]
-    .map((key) => `${key}`)
-    .join(" | ");
-
-  return `any: ${argEnvKeys}
-arg: ${argsFormatted}
-env: ${envFormatted}`;
-};
-
-// declare namespace Terminal {
-//   interface  TextTableOptions {
-
-//   }
-
-//   interface Impl {
-//     table(tableCells: string[][], textTableOptions?: TextTableOptions): void;
-
-//   }
-// }
