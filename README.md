@@ -10,18 +10,21 @@
 
 There are so many config libraries, do we really need another??? Well, possibly!
 
-[No existing library I tried](#credit-and-references) met my requirements including:
+[No existing library I tried](#credit-and-references) met my requirements.
+
+My goals & requirements include:
 
 * Enable dynamic app config. [See '12 Factor App' on Config](https://12factor.net/config)
 * TypeScript support.
 * Portable pattern (not filesystem-locked, browser support.)
 * Simple, memorable & terse config format.
 
+<!--
 As described in [12 Factor App's chapter on Config](https://12factor.net/config), these are the typical use-cases for this library:
 
 * Resource handles to the database, Memcached, and other backing services.
 * Credentials to external services such as Amazon S3 or Twitter.
-* Per-deploy values such as the canonical hostname for the deploy.
+* Per-deploy values such as the canonical hostname for the deploy. -->
 
 > Table of Contents
 
