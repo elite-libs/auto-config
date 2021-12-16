@@ -1,12 +1,12 @@
 {
   "name": "@justsml/auto-config",
   "description": "A Unified Config & Arguments Library for Node.js. Featuring support for environment variables, command line arguments, and JSON files!",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "type": "commonjs",
   "homepage": "https://github.com/justsml/auto-config",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/justsml/auto-config.git"
+    "url": "https://github.com/justsml/auto-config.git"
   },
   "private": false,
   "packageManager": "yarn@1.10.0",
@@ -19,10 +19,10 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "prepublish": "yarn build",
+    "prepublish": "npm build",
     "publish": "npm publish --access public",
-    "test": "yarn build && jest",
-    "test:coverage": "yarn build && jest --coverage",
+    "test": "npm build && jest",
+    "test:coverage": "npm build && jest --coverage",
     "build": "npx rimraf dist && npx tsc && mv ./dist/src/* ./dist && rm -rf ./dist/src"
   },
   "keywords": [

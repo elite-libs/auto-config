@@ -1,7 +1,11 @@
 # @justsml/auto-config
 
+[![CI Status](https://github.com/justsml/auto-config/workflows/node-test/badge.svg)](https://github.com/justsml/auto-config/actions)
 [![NPM version](https://img.shields.io/npm/v/@justsml/auto-config.svg)](https://www.npmjs.com/package/@justsml/auto-config)
-[![CI Status](https://github.com/justsml/auto-config/workflows/test/badge.svg)](https://github.com/justsml/auto-config/actions)
+[![GitHub stars](https://img.shields.io/github/stars/justsml/auto-config.svg?style=social)](https://github.com/justsml/auto-config)
+<!-- [![Dependency Status](https://img.shields.io/david/justsml/auto-config.svg)](https://david-dm.org/justsml/auto-config) -->
+<!-- [![Code Climate](https://img.shields.io/codeclimate/github/justsml/auto-config.svg)](https://codeclimate.com/github/justsml/auto-config) -->
+<!-- [![Coverage Status](https://img.shields.io/codecov/c/github/justsml/auto-config.svg)](https://codecov.io/gh/justsml/auto-config) -->
 
 ## Intro
 
@@ -39,7 +43,7 @@ As described in [12 Factor App's chapter on Config](https://12factor.net/config)
     * [Mix of environment and command arguments](#mix-of-environment-and-command-arguments)
     * [Single-letter flag arguments](#single-letter-flag-arguments)
     * [Error on required fields](#error-on-required-fields)
-    * [`--help` CLI Output](#--help-cli-output)
+    * [`--help` CLI Output](#cli-help-output)
   * [TODO](#todo)
   * [Credit and References](#credit-and-references)
 
