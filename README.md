@@ -1,5 +1,8 @@
 # @justsml/auto-config
 
+[![NPM version](https://img.shields.io/npm/v/@justsml/auto-config.svg)](https://www.npmjs.com/package/@justsml/auto-config)
+[![CI Status](https://github.com/justsml/auto-config/workflows/test/badge.svg)](https://github.com/justsml/auto-config/actions)
+
 ## Intro
 
 > A Unified Config & Arguments Library for Node.js!
@@ -40,6 +43,15 @@ As described in [12 Factor App's chapter on Config](https://12factor.net/config)
   * [TODO](#todo)
   * [Credit and References](#credit-and-references)
 
+## Install
+
+
+```bash
+npm install @justsml/auto-config
+
+yarn add @justsml/auto-config
+```
+
 ## Example
 
 ```ts
@@ -54,7 +66,7 @@ export default autoConfig({
   },
   port: {
     help: 'The port to start server on.',
-    args: ['--port', '-p'],
+    args: ['--port', '-p', 'PORT'],
     type: 'number',
     required: true,
   },
