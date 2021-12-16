@@ -11,13 +11,13 @@ import { CommandOption, ConfigInputs, ConfigResults } from './types';
 import isString from 'lodash.isstring';
 import { optionsHelp } from './render';
 import debug from 'debug';
-import { mapValues } from 'lodash';
+// import { mapValues } from 'lodash';
 
 export const autoConfig = function <
   TInput extends { [K in keyof TInput]: CommandOption }
 >(config: TInput) {
   const debugLog = debug('auto-config');
-  debugLog('Loading runtime environment & command line arguments...');
+  debugLog('START: Loading runtime environment & command line arguments.');
   let { cliArgs, envKeys } = extractEnvArgs();
   if (debugLog.enabled) {
     debugLog('runtime.cliArgs', JSON.stringify(cliArgs));
@@ -26,8 +26,6 @@ export const autoConfig = function <
   }
 
   checkSpecialArgs(cliArgs, config);
-
-  // config = mapValues(config);
 
   const schemaObject = buildSchema(config);
 
@@ -42,6 +40,7 @@ export const autoConfig = function <
     envKeys,
   });
 
+  debugLog('DONE', JSON.stringify(commandOptions));
   return commandOptions;
 };
 
