@@ -21,8 +21,8 @@
   "scripts": {
     "prepublishOnly": "npm build",
     "publish": "npm publish --access public",
-    "test": "npm build && jest",
-    "test:coverage": "npm build && jest --coverage",
+    "test": "npm run build && jest",
+    "test:coverage": "npm run build && jest --coverage",
     "build": "npx rimraf dist && npx tsc && mv ./dist/src/* ./dist && rm -rf ./dist/src"
   },
   "keywords": [
