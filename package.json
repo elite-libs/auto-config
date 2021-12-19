@@ -19,7 +19,7 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "prepublish": "npm build",
+    "prepublishOnly": "npm build",
     "publish": "npm publish --access public",
     "test": "npm build && jest",
     "test:coverage": "npm build && jest --coverage",
