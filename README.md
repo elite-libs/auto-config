@@ -157,6 +157,12 @@ node ./src/app.js --help
 
 * [ ] Enum support.
 * [ ] Inverting boolean flags with `--no-debug` versus `--debug`.
+* [ ] Plugin modules with minimal overhead. (e.g. 3rd party loaders: AWS SSM, AppConfig, Firebase Config,  etc.)
+  * Example args: `{ssm:/app/flags/path/admin_dashboard}`
+    * `['{ssm:/app/flags/path/admin_dashboard}', 'FLAG_ADMIN_DASHBOARD_ENABLED', '--flagAdminDashboard', '--flag-admin-dashboard']`
+* [ ] Support for loading files, and structured data with dotted key paths.
+  * Example args: `{config.flags.admin_dashboard}`
+    * `['{config.flags.admin_dashboard}', 'FLAG_ADMIN_DASHBOARD_ENABLED', '--flagAdminDashboard', '--flag-admin-dashboard']`
 * [x] Auto `--help` output.
 * [x] `--version` output.
 * [x] `default` values.
