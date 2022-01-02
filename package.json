@@ -1,12 +1,12 @@
 {
-  "name": "@justsml/auto-config",
+  "name": "@elite-libs/auto-config",
   "description": "A Unified Config & Arguments Library for Node.js. Featuring support for environment variables, command line arguments, and JSON files!",
-  "version": "1.1.4",
+  "version": "1.0.0",
   "type": "commonjs",
-  "homepage": "https://github.com/justsml/auto-config",
+  "homepage": "https://github.com/elite-libs/auto-config",
   "repository": {
     "type": "git",
-    "url": "https://github.com/justsml/auto-config.git"
+    "url": "https://github.com/elite-libs/auto-config.git"
   },
   "private": false,
   "packageManager": "yarn@1.10.0",
@@ -15,15 +15,32 @@
     "yarn": ">=1.10.0",
     "node": ">=12.0.0"
   },
-  "main": "./dist/index.js",
-  "exports": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "outputFormat": "commonjs",
+  "exports": "./dist/src/index.js",
+  "main": "dist/src/main.js",
+  "module": "dist/src/module.js",
+  "types": "dist/src/index.d.ts",
+  "targets": {
+    "types": false,
+    "main": {
+      "outputFormat": "commonjs",
+      "isLibrary": true
+    },
+    "module": {
+      "outputFormat": "esmodule",
+      "isLibrary": true
+    }
+  },
+  "browserslist": "> 0.75%, last 2 versions, not dead",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "release": "npm publish --access public",
-    "test": "npm run build && jest",
-    "test:coverage": "npm run build && jest --coverage",
-    "build": "npx rimraf dist && npx tsc && mv ./dist/src/* ./dist && rm -rf ./dist/src"
+    "release:npm": "npm publish --access public --registry https://registry.npmjs.org/",
+    "release:github": "npm publish --access public --registry https://npm.pkg.github.com/",
+    "test": "yarn run build && jest",
+    "test:coverage": "yarn run build && jest --coverage",
+    "build": "npx rimraf ./dist/* && npm run build:types && npm run build:bundle",
+    "build:bundle": "parcel build ./src/index.ts",
+    "build:types": "tsc --isolatedModules false --module amd --declaration --declarationMap --outFile dist/index.js"
   },
   "keywords": [
     "config",
@@ -42,6 +59,7 @@
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
+    "@swc/helpers": "^0.3.2",
     "@types/debug": "^4.1.7",
     "@types/jest": "^26.0.3",
     "@types/lodash": "^4.14.178",
@@ -52,6 +70,7 @@
     "@types/node": "^16.11.12",
     "@types/terminal-kit": "^1.28.4",
     "jest": "^26.6.0",
+    "parcel": "^2.0.1",
     "ts-jest": "^26.5.0",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
@@ -64,6 +83,7 @@
     "lodash.keys": "^4.2.0",
     "lodash.mapvalues": "^4.6.0",
     "minimist": "^1.2.5",
+    "process": "^0.11.10",
     "terminal-kit": "^2.3.0",
     "zod": "^3.11.6"
   },

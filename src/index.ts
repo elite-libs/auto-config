@@ -73,11 +73,15 @@ function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
       return `${issue.path.join('.')} - (${issue.message})`;
     });
     console.error(
-      `Config is Invalid or Missing for ${
+      `Invalid or Missing Config for ${
         fieldList.length
       } field(s): ${fieldList.join('; ')}`
     );
-    return process.exit(1);
+    throw new Error(
+      `Invalid or Missing Config for ${
+        fieldList.length
+      } field(s): ${fieldList.join('; ')}`
+    );
     // throw new ConfigError(
     //   `Config Error! Invalid or Missing values for: ${fieldList.join("; ")}!`,
     //   inputs,
@@ -211,12 +215,19 @@ function getOptionValue({
   debugLog('cliFlag', cliFlag);
   debugLog('envKeys', envKeys);
   debugLog('inputCliArgs:', inputCliArgs);
-  debugLog('inputEnvKeys:', Object.keys(inputEnvKeys).filter((k) => !k.startsWith('npm')).sort());
+  debugLog(
+    'inputEnvKeys:',
+    Object.keys(inputEnvKeys)
+      .filter((k) => !k.startsWith('npm'))
+      .sort()
+  );
   debugLog('Checking.cliArgs:', [...cliFlag, ...cliArgs]);
   // Match CLI args
-  let argNameMatch = stripDashes([...cliFlag, ...cliArgs].find(
-    (key) => typeof key === 'string' && inputCliArgs[stripDashes(key)]
-  ));
+  let argNameMatch = stripDashes(
+    [...cliFlag, ...cliArgs].find(
+      (key) => typeof key === 'string' && inputCliArgs[stripDashes(key)]
+    )
+  );
   debugLog('argNameMatch:', argNameMatch);
   const matchingArg = isString(argNameMatch)
     ? inputCliArgs[argNameMatch]

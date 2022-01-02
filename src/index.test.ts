@@ -1,5 +1,5 @@
 import { autoConfig } from './index';
-import { mockArgv, setEnvKey } from './utils';
+import { mockArgv, setEnvKey } from './test-helpers';
 
 const processExitSpy = jest
   .spyOn(process, 'exit')
