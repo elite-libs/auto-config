@@ -50,6 +50,7 @@ function buildSchema<TInput extends { [K in keyof TInput]: CommandOption }>(
   const schemaObject = z.object(
     Object.entries<CommandOption>(config).reduce(
       (schema, [name, commandOption]) => {
+        commandOption.type = commandOption.type || 'string';
         schema[name as keyof TInput] = getOptionSchema({ commandOption });
         return schema;
       },
@@ -97,12 +98,14 @@ function assembleConfigResults<
   const commandOptions = Object.entries<CommandOption>(config).reduce(
     (conf, [name, opt]) => {
       if (opt) {
+        opt.type = opt.type || 'string';
         const v = getOptionValue({
           commandOption: opt,
           inputCliArgs: cliArgs,
           inputEnvKeys: envKeys,
         });
-        if (opt.type === 'string') conf[name as Keys] = v as any;
+        conf[name as Keys] = v as any;
+        // if (!opt.type || opt.type === 'string') 
         if (opt.type === 'number') conf[name as Keys] = v as any;
         if (opt.type === 'boolean') conf[name as Keys] = v as any;
         if (opt.type === 'array') conf[name as Keys] = v as any;
@@ -211,7 +214,7 @@ function getOptionValue({
   debugLog('cliFlag', cliFlag);
   debugLog('envKeys', envKeys);
   debugLog('inputCliArgs:', inputCliArgs);
-  debugLog('inputEnvKeys:', Object.keys(inputEnvKeys).filter((k) => !k.startsWith('npm')).sort());
+  // debugLog('inputEnvKeys:', Object.keys(inputEnvKeys).filter((k) => !k.startsWith('npm')).sort());
   debugLog('Checking.cliArgs:', [...cliFlag, ...cliArgs]);
   // Match CLI args
   let argNameMatch = stripDashes([...cliFlag, ...cliArgs].find(

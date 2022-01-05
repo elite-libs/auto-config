@@ -20,7 +20,7 @@ export function isNestedObject(obj: unknown) {
   return isObject(obj) && !Array.isArray(obj) && keys(obj).length > 0;
 }
 
-export function applyType(value: string, type: OptionTypeConfig['type']) {
+export function applyType(value: string, type: OptionTypeConfig['type'] = 'string') {
   switch (type) {
     case 'string':
       return value;
