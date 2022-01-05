@@ -1,6 +1,6 @@
 # @elite-libs/auto-config
 
-[![CI Status](https://github.com/elite-libs/auto-config/workflows/node-test/badge.svg)](https://github.com/elite-libs/auto-config/actions)
+[![CI Status](https://github.com/elite-libs/auto-config/workflows/test/badge.svg)](https://github.com/elite-libs/auto-config/actions)
 [![NPM version](https://img.shields.io/npm/v/@elite-libs/auto-config.svg)](https://www.npmjs.com/package/@elite-libs/auto-config)
 [![GitHub stars](https://img.shields.io/github/stars/elite-libs/auto-config.svg?style=social)](https://github.com/elite-libs/auto-config)
 <!-- [![Dependency Status](https://img.shields.io/david/elite-libs/auto-config.svg)](https://david-dm.org/elite-libs/auto-config) -->
