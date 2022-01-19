@@ -223,7 +223,7 @@ function getOptionValue({
   debugLog('argNameMatch:', argNameMatch);
   const matchingArg = isString(argNameMatch)
     ? inputCliArgs[argNameMatch]
-    : null;
+    : undefined;
   debugLog('argValueMatch:', matchingArg);
   if (matchingArg) return applyType(matchingArg, commandOption.type);
 
@@ -234,12 +234,12 @@ function getOptionValue({
   debugLog('envNameMatch:', envNameMatch);
   const matchingEnv = isString(envNameMatch)
     ? inputEnvKeys[envNameMatch as any]
-    : null;
+    : undefined;
   debugLog('envValueMatch:', matchingEnv);
   if (matchingEnv) return applyType(matchingEnv, commandOption.type);
 
-  if (commandOption.default != null)
+  if (commandOption.default != undefined)
     return applyType(`${commandOption.default}`, commandOption.type);
 
-  return defaultValue || null;
+  return defaultValue || undefined;
 }

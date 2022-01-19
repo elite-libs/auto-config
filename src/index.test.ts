@@ -93,6 +93,21 @@ describe('autoConfig core functionality', () => {
     expect(config.port).toBe(8080);
     expect(processExitSpy).toHaveBeenCalledTimes(0);
   });
+
+  test('handles non-required fields', () => {
+    const resetPort = setEnvKey('NOT_PORT', '8080');
+    const config = autoConfig({
+      port: {
+        help: 'The port to listen on.',
+        args: ['--port', 'PORT'],
+        type: 'number',
+      },
+    });
+    resetPort();
+    expect(config.port).toBeUndefined();
+  });
+
+
 });
 
 test('ignores env case sensitivity (port === PORT)', () => {
