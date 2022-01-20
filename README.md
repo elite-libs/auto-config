@@ -39,12 +39,13 @@ As described in [12 Factor App's chapter on Config](https://12factor.net/config)
 * [Why](#why)
 * [Example: AWS Access Config](#example-aws-access-config)
 * [Example: Web App with Database Config](#example-web-app-with-database-config)
-  * [Configuring your App Dynamically](#configuring-your-app-dynamically)
-    * [Command line arguments](#command-line-arguments)
-    * [Mix of environment and command arguments](#mix-of-environment-and-command-arguments)
-    * [Single-letter flag arguments](#single-letter-flag-arguments)
-    * [Error on required fields](#error-on-required-fields)
-    * [`--help` CLI Output](#cli-help-output)
+* [Example: Linux Move Command Arguments](#example-linux-move-command-arguments)
+* [Example: Runtime Usage Behavior](#example-runtime-usage-behavior)
+  * [Command line arguments](#command-line-arguments)
+  * [Mix of environment and command arguments](#mix-of-environment-and-command-arguments)
+  * [Single-letter flag arguments](#single-letter-flag-arguments)
+  * [Error on required fields](#error-on-required-fields)
+  * [`--help` CLI Output](#cli-help-output)
   * [TODO](#todo)
   * [Credit and References](#credit-and-references)
 
@@ -125,7 +126,9 @@ import express from 'express';
 import catRouter from './routes/cat';
 import config from './config';
 
-const logMode = config.debugMode ? "dev" : "combined";
+const { port, debugMode } = config;
+
+const logMode = debugMode ? "dev" : "combined";
 
 export const app = express()
   .use(express.json())
@@ -134,16 +137,43 @@ export const app = express()
   .get('/', (req, res) => res.send('Welcome to my API'))
   .use('/cat', catRouter);
 
-app.listen(config.port)
+app.listen(port)
   .on('error', console.error)
   .on('listening', () =>
-    console.log(`Started server: http://0.0.0.0:${config.port}`);
+    console.log(`Started server: http://0.0.0.0:${port}`);
   );
 ```
 
-### Configuring your App Dynamically
+## Example: Linux Move Command Arguments
 
-#### Command line arguments
+```ts
+const moveOptions = autoConfig({
+  force: {
+    args: '-f',
+    help: 'Do not prompt for confirmation before overwriting the destination path.  (The -f option overrides any previous -i or -n options.)'
+    type: 'boolean',
+  },
+  interactive: {
+    args: '-i',
+    help: 'Cause mv to write a prompt to standard error before moving a file that would overwrite an existing file.  If the response from the standard input begins with the character `y` or `Y`, the move is attempted.  (The -i option overrides any previous -f or -n options.)'
+    type: 'boolean',
+  },
+  noOverwrite: {
+    args: '-n',
+    help: 'Do not overwrite an existing file.  (The -n option overrides any previous -f or -i options.)',
+    type: 'boolean',
+  },
+  verbose: {
+    args: '-v',
+    help: 'Cause mv to be verbose, showing files after they are moved.',
+    type: 'boolean',
+  }
+});
+```
+
+## Example: Runtime Usage Behavior
+
+### Command line arguments
 
 ```bash
 node ./src/app.js \
@@ -153,7 +183,7 @@ node ./src/app.js \
 # { port: 8080, databaseUrl: 'postgres://localhost/postgres', debug: true }
 ```
 
-#### Mix of environment and command arguments
+### Mix of environment and command arguments
 
 ```bash
 DATABASE_URL=postgres://localhost/postgres \
@@ -163,7 +193,7 @@ DATABASE_URL=postgres://localhost/postgres \
 # { port: 8080, databaseUrl: 'postgres://localhost/postgres', debug: true }
 ```
 
-#### Single-letter flag arguments
+### Single-letter flag arguments
 
 ```bash
 node ./src/app.js \
@@ -173,7 +203,7 @@ node ./src/app.js \
 # { port: 8080, databaseUrl: 'postgres://localhost/postgres', debug: true }
 ```
 
-#### Error on required fields
+### Error on required fields
 
 ```bash
 node ./src/app.js \
@@ -181,7 +211,7 @@ node ./src/app.js \
 # Error: databaseUrl is required.
 ```
 
-#### CLI Help Output
+### CLI Help Output
 
 ```bash
 node ./src/app.js --help
@@ -205,8 +235,9 @@ node ./src/app.js --help
 ╰───────────────────────────┴────────────────────────────────────────────┴──────────────────────────────────────────────────────────╯
 ```
 
-### TODO
+## TODO
 
+* [ ] Add option to include the `_` or `__` args from minimist. (Overflow/unparsed extra args.)
 * [ ] Enum support.
 * [ ] Inverting boolean flags with `--no-debug` versus `--debug`.
 * [ ] Plugin modules with minimal overhead. (e.g. 3rd party loaders: AWS SSM, AppConfig, Firebase Config,  etc.)
@@ -221,7 +252,7 @@ node ./src/app.js --help
 * [x] `required` values.
 * [x] Zod validators for `optional`, `min`, `max`, `gt`, `gte`, `lt`, `lte`.
 
-### Credit and References
+## Credit and References
 
 Projects researched, with any notes on why it wasn't a good fit.
 
