@@ -237,6 +237,7 @@ node ./src/app.js --help
 
 ## TODO
 
+* [ ] Add support for loading stringified JSON.
 * [ ] Add option to include the `_` or `__` args from minimist. (Overflow/unparsed extra args.)
 * [ ] Enum support.
 * [ ] Inverting boolean flags with `--no-debug` versus `--debug`.
