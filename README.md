@@ -37,7 +37,8 @@ As described in [12 Factor App's chapter on Config](https://12factor.net/config)
 
 * [Intro](#intro)
 * [Why](#why)
-* [Example](#example)
+* [Example: AWS Access Config](#example-aws-access-config)
+* [Example: Web App with Database Config](#example-web-app-with-database-config)
   * [Configuring your App Dynamically](#configuring-your-app-dynamically)
     * [Command line arguments](#command-line-arguments)
     * [Mix of environment and command arguments](#mix-of-environment-and-command-arguments)
@@ -55,7 +56,43 @@ npm install @elite-libs/auto-config
 yarn add @elite-libs/auto-config
 ```
 
-## Example
+## Example: AWS Access Config
+
+```ts
+// `./src/aws-config.ts`
+import { autoConfig } from '@elite-libs/auto-config';
+import AWS from 'aws-sdk';
+
+const awsConfig = getAwsConfig();
+
+AWS.config.update({
+  ...awsConfig,
+  endpointDiscoveryEnabled: true,
+});
+
+function getAwsConfig() {
+  return autoConfig({
+    region: {
+      help: 'AWS Region',
+      args: ['--region', '-r', 'AWS_REGION'],
+      default: 'us-west-1',
+      required: true,
+    },
+    accessKeyId: {
+      help: 'AWS Access Key ID',
+      args: ['--access-key-id', 'AWS_ACCESS_KEY_ID'],
+      required: true,
+    },
+    secretAccessKey: {
+      help: 'AWS Secret Access Key',
+      args: ['--secret-access-key', 'AWS_SECRET_ACCESS_KEY'],
+      required: true,
+    },
+  });
+}
+```
+
+## Example: Web App with Database Config
 
 ```ts
 // `./src/config.ts`
@@ -83,9 +120,25 @@ export default autoConfig({
 ```
 
 ```ts
-// `./src/app.js`
+// `./src/server.js`
+import express from 'express';
+import catRouter from './routes/cat';
 import config from './config';
-console.log(config);
+
+const logMode = config.debugMode ? "dev" : "combined";
+
+export const app = express()
+  .use(express.json())
+  .use(express.urlencoded({ extended: false }))
+  .use(morgan(logMode))
+  .get('/', (req, res) => res.send('Welcome to my API'))
+  .use('/cat', catRouter);
+
+app.listen(config.port)
+  .on('error', console.error)
+  .on('listening', () =>
+    console.log(`Started server: http://0.0.0.0:${config.port}`);
+  );
 ```
 
 ### Configuring your App Dynamically
