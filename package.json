@@ -8,6 +8,11 @@
     "type": "git",
     "url": "https://github.com/elite-libs/auto-config.git"
   },
+  "source": "./src/index.ts",
+  "exports": "./dist/main.js",
+  "main": "./dist/main.js",
+  "module": "./dist/module.js",
+  "types": "./dist/src/index.d.ts",
   "private": false,
   "packageManager": "yarn@1.10.0",
   "engineStrict": true,
@@ -15,10 +20,57 @@
     "yarn": ">=1.10.0",
     "node": ">=12.0.0"
   },
-  "main": "./dist/index.js",
-  "exports": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "modern": "dist/modern.js",
+  "legacy": "dist/legacy.js",
+  "examples": "dist/examples/index.js",
+  "targets": {
+    "types": {
+      "source": "src/types.ts"
+    },
+    "modern": {
+      "optimize": false,
+      "outputFormat": "esmodule",
+      "engines": {
+        "node": ">= 14"
+      }
+    },
+    "legacy": {
+      "optimize": false,
+      "outputFormat": "commonjs",
+      "engines": {
+        "browsers": "> 0.5%, last 2 versions, not dead"
+      }
+    },
+    "examples": {
+      "source": "examples/server-app/index.ts",
+      "optimize": false,
+      "outputFormat": "commonjs",
+      "engines": {
+        "browsers": "> 0.5%, last 2 versions, not dead"
+      }
+    }
+  },
   "scripts": {
+    "prepublishOnly": "yarn run build",
+    "release:npm": "npm publish --access public --registry https://registry.npmjs.org/",
+    "release:github": "npm publish --access public --registry https://npm.pkg.github.com/",
+    "test": "yarn run build && jest",
+    "test:coverage": "yarn run build && jest --coverage",
+    "build": "npx rimraf ./dist/* && yarn run build:types && yarn run build:bundle",
+    "build:bundle": "parcel build ./src/index.ts",
+    "build:types": "tsc --downlevelIteration --isolatedModules false --declaration --declarationMap --emitDeclarationOnly true --module amd --outDir dist"
+  },
+  "// private": false,
+  "// packageManager": "yarn@1.10.0",
+  "// engineStrict": true,
+  "// engines": {
+    "yarn": ">=1.10.0",
+    "node": ">=12.0.0"
+  },
+  "// main": "./dist/index.js",
+  "// exports": "./dist/index.js",
+  "// types": "./dist/index.d.ts",
+  "// scripts": {
     "prepublishOnly": "yarn run build",
     "release:npm": "npm publish --access public --registry https://registry.npmjs.org/",
     "release:github": "npm publish --access public --registry https://npm.pkg.github.com/",
@@ -39,11 +91,13 @@
     "name": "justsml",
     "url": "https://danlevy.net"
   },
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
+    "@parcel/packager-ts": "2.2.1",
+    "@parcel/transformer-typescript-types": "2.2.1",
     "@types/debug": "^4.1.7",
     "@types/jest": "^26.0.3",
     "@types/lodash": "^4.14.178",
@@ -53,11 +107,13 @@
     "@types/minimist": "^1.2.2",
     "@types/node": "^16.11.12",
     "jest": "^26.6.0",
+    "parcel": "2.2.1",
     "ts-jest": "^26.5.0",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
   },
   "dependencies": {
+    "chalk": "^4.0.0",
     "columnify": "1.5.4",
     "debug": "^4.3.3",
     "lodash.isobject": "^3.0.2",
@@ -77,7 +133,7 @@
         "@babel/preset-env",
         {
           "targets": {
-            "node": "current"
+            "node": ">=12"
           },
           "modules": false
         }

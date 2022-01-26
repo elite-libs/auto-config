@@ -5,11 +5,11 @@ export default class ConfigError<
   TError extends Error | undefined = undefined
 > extends Error {
   inputs?: ConfigInputs;
-  #baseError?: TError;
+  baseError?: TError;
 
   constructor(message: string, inputs?: ConfigInputs, baseError?: TError) {
     super(message);
-    this.#baseError = baseError;
+    this.baseError = baseError;
     this.inputs = inputs;
     this.name = 'ConfigError';
     Error.captureStackTrace(this, ConfigError);
@@ -18,8 +18,8 @@ export default class ConfigError<
 
   getDetails() {
     let fieldErrors = '';
-    if (this.#baseError instanceof ZodError) {
-      fieldErrors = this.#baseError.errors.map(error => {
+    if (this.baseError instanceof ZodError) {
+      fieldErrors = this.baseError.errors.map(error => {
         return `${error.path.join('.')}: ${error.message}.`;
       }).join(' ');
     }
@@ -32,7 +32,7 @@ export default class ConfigError<
       message: this.message,
       stack: this.stack,
       inputs: this.inputs,
-      // baseError: this.#baseError,
+      // baseError: this.baseError,
     };
   }
 }

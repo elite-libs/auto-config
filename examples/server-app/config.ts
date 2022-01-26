@@ -1,5 +1,5 @@
 // import { autoConfig } from '@elite-libs/auto-config';
-import { autoConfig } from '../../dist/index';
+import { autoConfig } from '../../src/index';
 
 export default autoConfig({
   databaseUrl: {
