@@ -67,6 +67,7 @@ export type ConfigResults<
 };
 
 export type Nullable<T> = T | null | undefined;
+export type Undefinedable<T> = T | undefined;
 
 export type GetTypeByTypeString<TType extends string | undefined> =
   TType extends 'string'
@@ -80,5 +81,5 @@ export type GetTypeByTypeString<TType extends string | undefined> =
     : TType extends 'date'
     ? Date
     : TType extends undefined
-    ? string
-    : never;
+    ? Undefinedable<string>
+    : string; // Was `never` - that's wrong default arg type!

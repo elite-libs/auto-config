@@ -107,6 +107,16 @@ describe('autoConfig core functionality', () => {
     expect(config.port).toBeUndefined();
   });
 
+  test('supports undefined "type"\'s as string types', () => {
+    const config = autoConfig({
+      stageName: {
+        help: 'The cloud environment/stack to target.',
+        args: ['--stage-name', 'STAGE_NAME'],
+      },
+    });
+    expect(config.stageName).toBeUndefined();
+  });
+
 
 });
 

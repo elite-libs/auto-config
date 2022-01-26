@@ -250,6 +250,7 @@ export const config = autoConfig({
 });
 ```
 
+* [ ] Add browser bundler support by allowing args like this: `() => process.env.FEAT_FLAG_V1`. **To support non-dynamic env references.**
 * [x] Auto `--help` output.
   * [ ] Add support to define free-text in help output. E.g. See sections from "man pages" - often labelled like `DESCRIPTION`, `Usage`, etc.
 * [ ] Add support for loading stringified JSON.

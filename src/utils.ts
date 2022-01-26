@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import isObject from 'lodash.isobject';
 import keys from 'lodash.keys';
 import type { OptionTypeConfig } from './types';
@@ -15,9 +13,9 @@ export function toBoolean(value: any) {
     value === 'on'
   );
 }
-export function isNestedObject(obj: unknown) {
-  return isObject(obj) && !Array.isArray(obj) && keys(obj).length > 0;
-}
+// export function isNestedObject(obj: unknown) {
+//   return isObject(obj) && !Array.isArray(obj) && keys(obj).length > 0;
+// }
 
 export function applyType(value: string, type: OptionTypeConfig['type'] = 'string') {
   switch (type) {
@@ -34,20 +32,7 @@ export function applyType(value: string, type: OptionTypeConfig['type'] = 'strin
     // case 'object':
     //   return value as Record<string, unknown>;
   }
-  return value;
-}
-
-export function getPackageJson(currentDir: string = process.cwd()) {
-  let packageRootPath = process.cwd();
-  while (/node_modules\//g.test(packageRootPath)) {
-    packageRootPath = path.resolve(currentDir, '..');
-  }
-  try {
-    const pkg = fs.readFileSync(`${packageRootPath}/package.json`, 'utf8');
-    return typeof pkg === 'string' ? JSON.parse(pkg) : null;
-  } catch (error) {
-    return null;
-  }
+  // return value;
 }
 
 export function cleanupStringList(

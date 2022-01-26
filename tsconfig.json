@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "alwaysStrict": true,
@@ -11,7 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     // "jsx": "preserve",
-    "lib": ["esnext"],
+    "lib": ["esnext", "DOM"],
     "module": "CommonJS",
     "moduleResolution": "node",
     // "noEmit": true,
@@ -23,7 +24,12 @@
     "sourceMap": true,
     "strict": true,
     "target": "es5",
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "types": ["node", "jest"],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+
   },
   "include": [
     "examples/**/*.ts",
