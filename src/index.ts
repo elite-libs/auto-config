@@ -5,6 +5,8 @@ import { CommandOption, ConfigInputs, ConfigResults } from "./types";
 import isString from "lodash.isstring";
 import { optionsHelp } from "./render";
 import debug from "debug";
+import chalk from "chalk";
+import path from "path";
 
 export const autoConfig = function <
   TInput extends { [K in keyof TInput]: CommandOption }
@@ -62,15 +64,23 @@ function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
   const parseResults = schema.safeParse(config);
   debugLog("parse success?", parseResults.success);
   if (!parseResults.success) {
+    const { issues } = parseResults.error;
     debugLog("parse success?", parseResults.success);
-    const fieldList = parseResults.error.issues.map((issue) => {
-      return `${issue.path.join(".")} - (${issue.message})`;
-    });
+    const fieldErrors = issues.reduce((groupedResults, issue) => {
+      groupedResults[issue.message] = groupedResults[issue.message] || [];
+      groupedResults[issue.message].push(
+        issue.path.join(".") + " " + issue.code
+      );
+      return groupedResults;
+    }, {} as Record<string, string[]>);
+
+    console.error(`${chalk.red.bold`ERROR:`} Found ${issues.length} Config Problem(s)!`);
     console.error(
-      `Config is Invalid or Missing for ${
-        fieldList.length
-      } field(s): ${fieldList.join("; ")}`
+      `  Fix the following ${issues.length} issues. (Check '--help' output for more details.)`
     );
+    Object.entries(fieldErrors).forEach(([message, errors]) => {
+      console.error(`  - ${chalk.magentaBright(message)}: ${errors.join(", ")}`);
+    });
     return process.exit(1);
     // throw new ConfigError(
     //   `Config Error! Invalid or Missing values for: ${fieldList.join("; ")}!`,
@@ -134,6 +144,8 @@ function checkSpecialArgs(
     return process.exit(1);
   }
   if (args.help) {
+    const pkgName = process.env.npm_package_name || path.basename(path.dirname(process.argv[1])) || 'This app'
+    console.log(`\n${chalk.underline.bold.greenBright(pkgName)} has the following options:`);
     console.log(optionsHelp(config));
     return process.exit(0);
   }

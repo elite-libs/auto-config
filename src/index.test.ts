@@ -76,10 +76,10 @@ describe('autoConfig core functionality', () => {
       },
     });
     expect(processExitSpy).toHaveBeenCalledTimes(1);
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
   });
 
-  test('supports non-standard arguments, e.g. --PORT', () => {
+  test('supports non-standard argument casing, e.g. --PORT', () => {
     const restoreArgv = mockArgv(['--PORT', '8080']);
     const config = autoConfig({
       port: {
@@ -148,7 +148,7 @@ describe('validates config runtime rules', () => {
     });
     resetEnv();
     expect(processExitSpy).toHaveBeenCalledTimes(1);
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
   });
 });
 

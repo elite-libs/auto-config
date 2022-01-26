@@ -56,26 +56,7 @@
     "test:coverage": "yarn run build && jest --coverage",
     "build": "npx rimraf ./dist/* && yarn run build:types && yarn run build:bundle",
     "build:bundle": "parcel build ./src/index.ts",
-    "build:types": "tsc --downlevelIteration --isolatedModules false --declaration --declarationMap --noEmit false --module amd --outDir dist/ts/"
-  },
-  "// private": false,
-  "// packageManager": "yarn@1.10.0",
-  "// engineStrict": true,
-  "// engines": {
-    "yarn": ">=1.10.0",
-    "node": ">=12.0.0"
-  },
-  "// main": "./dist/index.js",
-  "// exports": "./dist/index.js",
-  "// types": "./dist/index.d.ts",
-  "// scripts": {
-    "prepublishOnly": "yarn run build",
-    "release:npm": "npm publish --access public --registry https://registry.npmjs.org/",
-    "release:github": "npm publish --access public --registry https://npm.pkg.github.com/",
-    "release": "npm publish --access public",
-    "test": "npm run build && jest",
-    "test:coverage": "npm run build && jest --coverage",
-    "build": "npx rimraf dist && npx tsc && mv ./dist/src/* ./dist && rm -rf ./dist/src"
+    "build:types": "tsc --downlevelIteration --isolatedModules false --declaration --declarationMap --noEmit false --module CommonJS --outDir dist/ts/"
   },
   "keywords": [
     "config",
@@ -124,19 +105,5 @@
   },
   "files": [
     "dist"
-  ],
-  "\\ babel": {
-    "presets": [
-      "@babel/preset-typescript",
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": ">=12"
-          },
-          "modules": false
-        }
-      ]
-    ]
-  }
+  ]
 }

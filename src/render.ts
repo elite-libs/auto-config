@@ -1,7 +1,7 @@
 import type { CommandOption } from "./types";
 import debug from "debug";
 import columnify from "columnify";
-import * as chalk from "chalk";
+import chalk from "chalk";
 
 const formatName = (name: string, opt: CommandOption) => {
   const { required, default: defaultValue } = opt;
@@ -11,15 +11,16 @@ const formatName = (name: string, opt: CommandOption) => {
       ` = ${chalk.dim(JSON.stringify(defaultValue))}`
     );
   }
-  if (!required) return chalk.italic(`[${name}]`);
-  return chalk.bold(`${name}*`);
+  if (!required) return chalk.italic(`${name}`);
+  return chalk.bold(`${name}${chalk.bold.redBright`*`}`);
 };
 
 const formatArg = (arg: string) => {
-  if (arg.startsWith("--")) return chalk.magentaBright.italic`${arg}`;
-  if (arg.startsWith("-")) return chalk.yellowBright.italic`${arg}`;
+  // if (arg.startsWith("--")) return chalk.magentaBright.italic`${arg}`;
+  // if (arg.startsWith("-")) return chalk.yellowBright.italic`${arg}`;
+  if (arg.startsWith("-")) return chalk.magentaBright.italic`${arg}`;
   if (arg === arg.toLocaleUpperCase()) return chalk.cyanBright.italic`${arg}`;
-  return chalk.dim.italic`${arg}`;
+  return "\n" + chalk.dim.italic`${arg}`;
 };
 
 export const optionsHelp = function <
@@ -34,27 +35,48 @@ export const optionsHelp = function <
       // debugLog(`Formatting option ${key} ${JSON.stringify(args)}`);
       args = args == null ? [] : Array.isArray(args) ? args : [args];
       return {
-        name: formatName(name, value),
-        args: args.concat().sort(sortArgsList).map(formatArg).join(", "),
-        help,
-        // args: args.concat().map(formatArg).join(", "),
+        Name: formatName(name, value),
+        "CLI & Env Args": args
+          .concat()
+          .sort(sortArgsList)
+          .map(formatArg)
+          .join(", ")
+          .padEnd(3, " "),
+        Help: help,
+        // "CLI & Env Args": args.concat().map(formatArg).join(", "),
       };
     }
   );
 
   const [cols, rows] = process.stdout.getWindowSize();
   configArray.push(
-    { name: "help", args: "--help", help: "Show this help." },
-    { name: "version", args: "--version", help: "Show the current version." }
+    { Name: "help", "CLI & Env Args": "--help", Help: "Show this help." },
+    {
+      Name: "version",
+      "CLI & Env Args": "--version",
+      Help: "Show the current version.",
+    }
   );
   return columnify(configArray, {
-    minWidth: 20,
+    // minWidth: 25,
     maxLineWidth: "auto",
     columns: ["Name", "CLI & Env Args", "Help"],
+    headingTransform: (data: string) => {
+      return chalk.bold.cyanBright.underline`${data}`;
+    },
+    preserveNewLines: true,
     config: {
-      help: {
+      "Name": {
+        // dataTransform: (data: string) => ' ‣  ' + data,
+      },
+      "CLI & Env Args": {
+        // minWidth: 30,
+      },
+      Help: {
+        truncate: false,
         preserveNewLines: true,
-        maxWidth: Number((cols * 0.75).toFixed(0)),
+        // minWidth: Number((cols * 0.50).toFixed(0)),
+        // maxWidth: Number((cols * 0.75).toFixed(0)),
       },
     },
   });
