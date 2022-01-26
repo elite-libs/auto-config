@@ -35,19 +35,22 @@ As described in [12 Factor App's chapter on Config](https://12factor.net/config)
 
 > Table of Contents
 
-* [Intro](#intro)
-* [Why](#why)
-* [Example: AWS Access Config](#example-aws-access-config)
-* [Example: Web App with Database Config](#example-web-app-with-database-config)
-* [Example: Linux Move Command Arguments](#example-linux-move-command-arguments)
-* [Example: Runtime Usage Behavior](#example-runtime-usage-behavior)
-  * [Command line arguments](#command-line-arguments)
-  * [Mix of environment and command arguments](#mix-of-environment-and-command-arguments)
-  * [Single-letter flag arguments](#single-letter-flag-arguments)
-  * [Error on required fields](#error-on-required-fields)
-  * [`--help` CLI Output](#cli-help-output)
-  * [TODO](#todo)
-  * [Credit and References](#credit-and-references)
+- [@elite-libs/auto-config](#elite-libsauto-config)
+  - [Intro](#intro)
+  - [Why](#why)
+  - [Install](#install)
+  - [Example: AWS Access Config](#example-aws-access-config)
+  - [Example: Web App with Database Config](#example-web-app-with-database-config)
+  - [Example: Linux Move Command Arguments](#example-linux-move-command-arguments)
+  - [Example: Runtime Usage Behavior](#example-runtime-usage-behavior)
+    - [Command line arguments](#command-line-arguments)
+    - [Mix of environment and command arguments](#mix-of-environment-and-command-arguments)
+    - [Single-letter flag arguments](#single-letter-flag-arguments)
+    - [Error on required fields](#error-on-required-fields)
+    - [CLI Help Output](#cli-help-output)
+  - [TODO](#todo)
+    - [Add Shorthand Object Support](#add-shorthand-object-support)
+  - [Credit and References](#credit-and-references)
 
 ## Install
 
@@ -237,6 +240,18 @@ node ./src/app.js --help
 
 ## TODO
 
+### Add Shorthand Object Support
+
+```ts
+export const config = autoConfig({
+  "databaseUrl": ['--databaseUrl', '--db', 'DATABASE_URL'],
+  "port": ['--port', '-p', 'PORT'],
+  "debug": ['--debug', '-D'],
+});
+```
+
+* [x] Auto `--help` output.
+  * [ ] Add support to define free-text in help output. E.g. See sections from "man pages" - often labelled like `DESCRIPTION`, `Usage`, etc.
 * [ ] Add support for loading stringified JSON.
 * [ ] Add option to include the `_` or `__` args from minimist. (Overflow/unparsed extra args.)
 * [ ] Enum support.
@@ -247,7 +262,6 @@ node ./src/app.js --help
 * [ ] Support for loading files, and structured data with dotted key paths.
   * Example args: `{config.flags.admin_dashboard}`
     * `['{config.flags.admin_dashboard}', 'FLAG_ADMIN_DASHBOARD_ENABLED', '--flagAdminDashboard', '--flag-admin-dashboard']`
-* [x] Auto `--help` output.
 * [x] `--version` output.
 * [x] `default` values.
 * [x] `required` values.

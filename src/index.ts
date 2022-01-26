@@ -141,7 +141,7 @@ function checkSpecialArgs(
     return process.exit(1);
   }
   if (args.help) {
-    optionsHelp(config);
+    console.log(optionsHelp(config));
     return process.exit(0);
   }
 }
