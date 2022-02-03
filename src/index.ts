@@ -74,12 +74,16 @@ function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
       return groupedResults;
     }, {} as Record<string, string[]>);
 
-    console.error(`${chalk.red.bold`ERROR:`} Found ${issues.length} Config Problem(s)!`);
+    console.error(
+      `${chalk.red.bold`ERROR:`} Found ${issues.length} Config Problem(s)!`
+    );
     console.error(
       `  Fix the following ${issues.length} issues. (Check '--help' output for more details.)`
     );
     Object.entries(fieldErrors).forEach(([message, errors]) => {
-      console.error(`  - ${chalk.magentaBright(message)}: ${errors.join(", ")}`);
+      console.error(
+        `  - ${chalk.magentaBright(message)}: ${errors.join(", ")}`
+      );
     });
     return process.exit(1);
     // throw new ConfigError(
@@ -144,8 +148,15 @@ function checkSpecialArgs(
     return process.exit(1);
   }
   if (args.help) {
-    const pkgName = process.env.npm_package_name || path.basename(path.dirname(process.argv[1])) || 'This app'
-    console.log(`\n${chalk.underline.bold.greenBright(pkgName)} has the following options:`);
+    const pkgName =
+      process.env.npm_package_name ||
+      path.basename(path.dirname(process.argv[1])) ||
+      "This app";
+    console.log(
+      `\n${chalk.underline.bold.greenBright(
+        pkgName
+      )} has the following options:`
+    );
     console.log(optionsHelp(config));
     return process.exit(0);
   }
@@ -157,7 +168,11 @@ function getOptionSchema({
   commandOption: CommandOption;
 }) {
   let zType =
-    opt.type === "array" ? z[opt.type](z.string()) : z[opt.type || "string"]();
+    opt.type === "array"
+      ? z.array(z.string())
+      : opt.type === "enum"
+      ? z.enum(opt.enum)
+      : z[opt.type || "string"]();
   if (opt.type === "boolean") {
     // @ts-ignore
     zType = zType.default(opt.default || false);

@@ -152,6 +152,49 @@ describe('validates config runtime rules', () => {
   });
 });
 
+describe('handles enum options', () => {
+  test('detects invalid enum value', () => {
+    const resetEnv = setEnvKey('FEATURE_FLAG_A', 'v1');
+    autoConfig({
+      featureFlagA: {
+        args: ['FEATURE_FLAG_A'],
+        type: 'enum',
+        enum: ['variant1', 'variant2'],
+      },
+    });
+    resetEnv();
+    expect(processExitSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
+  });
+  test('detects valid enum value', () => {
+    const resetEnv = setEnvKey('FEATURE_FLAG_A', 'variant1');
+    const config = autoConfig({
+      featureFlagA: {
+        args: ['FEATURE_FLAG_A'],
+        type: 'enum',
+        enum: ['variant1', 'variant2'],
+      },
+    });
+    
+    expect(config.featureFlagA).toBe('variant1');
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(0);
+    resetEnv();
+  });
+  test('supports enum default values', () => {
+    const config = autoConfig({
+      featureFlagA: {
+        args: ['FEATURE_FLAG_A'],
+        type: 'enum',
+        enum: ['variant1', 'variant2'],
+        default: 'variant1',
+      },
+    });
+    
+    expect(config.featureFlagA).toBe('variant1');
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(0);
+  });
+});
+
 describe('advanced field processing', () => {
   test('parses csv strings into array fields', () => {
     const resetEnv = setEnvKey('FLAGS', 'dev,qa,prod,staging');
