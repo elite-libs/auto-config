@@ -1,4 +1,4 @@
-# @elite-libs/auto-config
+# auto-config 🛠✨
 
 [![CI Status](https://github.com/elite-libs/auto-config/workflows/test/badge.svg)](https://github.com/elite-libs/auto-config/actions)
 [![NPM version](https://img.shields.io/npm/v/@elite-libs/auto-config.svg)](https://www.npmjs.com/package/@elite-libs/auto-config)
@@ -31,17 +31,19 @@ As described in [12 Factor App's chapter on Config](https://12factor.net/config)
 
 * Resource handles to the database, Memcached, and other backing services.
 * Credentials to external services such as Amazon S3 or Twitter.
-* Per-deploy values such as the canonical hostname for the deploy. -->
+* Per-deploy values such as the canonical hostname for the deploy.
+-->
 
 > Table of Contents
 
-- [@elite-libs/auto-config](#elite-libsauto-config)
+- [@elite-libs/auto-config](#auto-config)
   - [Intro](#intro)
   - [Why](#why)
   - [Install](#install)
   - [Example: AWS Access Config](#example-aws-access-config)
   - [Example: Web App with Database Config](#example-web-app-with-database-config)
   - [Example: Linux Move Command Arguments](#example-linux-move-command-arguments)
+  - [Example: Feature Flags](#example-feature-flags)
   - [Example: Runtime Usage Behavior](#example-runtime-usage-behavior)
     - [Command line arguments](#command-line-arguments)
     - [Mix of environment and command arguments](#mix-of-environment-and-command-arguments)
@@ -171,6 +173,32 @@ const moveOptions = autoConfig({
     help: 'Cause mv to be verbose, showing files after they are moved.',
     type: 'boolean',
   }
+});
+```
+
+## Example: Feature Flags
+
+```ts
+// `./src/config/featureFlags.ts`
+export const featureFlags = autoConfig({
+  dashboard: {
+    args: ['FEATURE_FLAG_DASHBOARD'],
+    type: 'enum',
+    enum: ['off', 'variant1'],
+    default: 'off',
+  },
+  checkout: {
+    args: ['FEATURE_FLAG_CHECKOUT'],
+    type: 'enum',
+    enum: ['off', 'variant1', 'variant2'],
+    default: 'off',
+  },
+  signup: {
+    args: ['FEATURE_FLAG_SIGNUP'],
+    type: 'enum',
+    enum: ['off', 'variant1', 'variant2', 'variant3', 'variant4'],
+    default: 'off',
+  },
 });
 ```
 
