@@ -36,7 +36,7 @@ As described in [12 Factor App's chapter on Config](https://12factor.net/config)
 
 > Table of Contents
 
-- [@elite-libs/auto-config](#auto-config)
+- [auto-config 🛠✨](#auto-config-)
   - [Intro](#intro)
   - [Why](#why)
   - [Install](#install)
@@ -180,7 +180,7 @@ const moveOptions = autoConfig({
 
 ```ts
 // `./src/config/featureFlags.ts`
-export const featureFlags = autoConfig({
+export const Flags = autoConfig({
   dashboard: {
     args: ['FEATURE_FLAG_DASHBOARD'],
     type: 'enum',
@@ -193,8 +193,8 @@ export const featureFlags = autoConfig({
     enum: ['off', 'variant1', 'variant2'],
     default: 'off',
   },
-  signup: {
-    args: ['FEATURE_FLAG_SIGNUP'],
+  register: {
+    args: ['FEATURE_FLAG_REGISTER'],
     type: 'enum',
     enum: ['off', 'variant1', 'variant2', 'variant3', 'variant4'],
     default: 'off',
