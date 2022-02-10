@@ -74,19 +74,18 @@ function verifySchema<TInput extends { [K in keyof TInput]: CommandOption }>(
       return groupedResults;
     }, {} as Record<string, string[]>);
 
-    console.error(`${chalk.red.bold`ERROR:`} Found ${issues.length} Config Problem(s)!`);
+    console.error(
+      `${chalk.red.bold`ERROR:`} Found ${issues.length} Config Problem(s)!`
+    );
     console.error(
       `  Fix the following ${issues.length} issues. (Check '--help' output for more details.)`
     );
     Object.entries(fieldErrors).forEach(([message, errors]) => {
-      console.error(`  - ${chalk.magentaBright(message)}: ${errors.join(", ")}`);
+      console.error(
+        `  - ${chalk.magentaBright(message)}: ${errors.join(", ")}`
+      );
     });
     return process.exit(1);
-    // throw new ConfigError(
-    //   `Config Error! Invalid or Missing values for: ${fieldList.join("; ")}!`,
-    //   inputs,
-    //   parseResults.error
-    // );
   }
   return parseResults.data;
 }
@@ -144,8 +143,15 @@ function checkSpecialArgs(
     return process.exit(1);
   }
   if (args.help) {
-    const pkgName = process.env.npm_package_name || path.basename(path.dirname(process.argv[1])) || 'This app'
-    console.log(`\n${chalk.underline.bold.greenBright(pkgName)} has the following options:`);
+    const pkgName =
+      process.env.npm_package_name ||
+      path.basename(path.dirname(process.argv[1])) ||
+      "This app";
+    console.log(
+      `\n${chalk.underline.bold.greenBright(
+        pkgName
+      )} has the following options:`
+    );
     console.log(optionsHelp(config));
     return process.exit(0);
   }
@@ -157,23 +163,33 @@ function getOptionSchema({
   commandOption: CommandOption;
 }) {
   let zType =
-    opt.type === "array" ? z[opt.type](z.string()) : z[opt.type || "string"]();
+    opt.type === "array"
+      ? z.array(z.string())
+      : opt.type === "enum"
+      ? z.enum(opt.enum)
+      : z[opt.type || "string"]();
   if (opt.type === "boolean") {
     // @ts-ignore
     zType = zType.default(opt.default || false);
   } else {
     // @ts-ignore
-    if (opt.default != null) zType = zType.default(opt.default);
-    // @ts-ignore
     if (!opt.required && !("min" in opt)) zType = zType.optional();
   }
+  // @ts-ignore
+  if (opt.default !== undefined) zType = zType.default(opt.default);
 
-  if ("min" in opt && "min" in zType) zType = zType.min(opt.min!);
-  if ("max" in opt && "max" in zType) zType = zType.max(opt.min!);
-  if ("gte" in opt && "gte" in zType) zType = zType.gte(opt.min!);
-  if ("lte" in opt && "lte" in zType) zType = zType.lte(opt.min!);
-  if ("gt" in opt && "gt" in zType) zType = zType.gt(opt.min!);
-  if ("lt" in opt && "lt" in zType) zType = zType.lt(opt.min!);
+  if ("min" in opt && typeof opt.min === "number" && "min" in zType)
+    zType = zType.min(opt.min);
+  if ("max" in opt && typeof opt.max === "number" && "max" in zType)
+    zType = zType.max(opt.max);
+  if ("gte" in opt && typeof opt.gte === "number" && "gte" in zType)
+    zType = zType.gte(opt.gte);
+  if ("lte" in opt && typeof opt.lte === "number" && "lte" in zType)
+    zType = zType.lte(opt.lte);
+  if ("gt" in opt && typeof opt.gt === "number" && "gt" in zType)
+    zType = zType.gt(opt.gt);
+  if ("lt" in opt && typeof opt.lt === "number" && "lt" in zType)
+    zType = zType.lt(opt.lt);
 
   return zType;
 }

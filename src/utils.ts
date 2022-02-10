@@ -29,6 +29,8 @@ export function applyType(value: string, type: OptionTypeConfig['type'] = 'strin
       return new Date(value);
     case 'array':
       return value.split(',');
+    case 'enum':
+      return value;
     // case 'object':
     //   return value as Record<string, unknown>;
   }

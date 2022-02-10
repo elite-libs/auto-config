@@ -1,7 +1,7 @@
 {
   "name": "@elite-libs/auto-config",
   "description": "A Unified Config & Arguments Library for Node.js. Featuring support for environment variables, command line arguments, and JSON files!",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "commonjs",
   "homepage": "https://github.com/elite-libs/auto-config",
   "repository": {
