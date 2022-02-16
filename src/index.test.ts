@@ -1,3 +1,4 @@
+import {Split, LiteralUnion, IterableElement} from 'type-fest';
 import { autoConfig } from './index';
 import { mockArgv, setEnvKey } from './test/utils';
 
@@ -172,7 +173,7 @@ describe('handles enum options', () => {
       featureFlagA: {
         args: ['FEATURE_FLAG_A'],
         type: 'enum',
-        enum: ['variant1', 'variant2'],
+        enum: 'variant1,variant2',
       },
     });
     
@@ -181,11 +182,22 @@ describe('handles enum options', () => {
     resetEnv();
   });
   test('supports enum default values', () => {
+    const vars = ['variant1', 'variant2', 'variant3', 'variant4']
+    const objVars = {variant1: 'variant1', variant2: 'variant2', variant3: 'variant3', variant4: 'variant4'}
+    const varJoin =  vars.join(','); 
+    const varCsv = 'variant1,variant2,variant3,variant4';
+    let opt: undefined | Split<typeof varJoin, ','>[number] = undefined;
+    let csvOpt: undefined | Split<typeof varCsv, ','>[number] = undefined;
+    csvOpt = 'v';
+    opt = 'v';
+    let iterTest: LiteralUnion<Readonly<IterableElement<typeof vars>>, string> = 'variant';
+    iterTest = 'v';
+
     const config = autoConfig({
       featureFlagA: {
         args: ['FEATURE_FLAG_A'],
         type: 'enum',
-        enum: ['variant1', 'variant2'],
+        enum: ['variant1', 'variant2', 'variant3', 'variant4'],
         default: 'variant1',
       },
     });

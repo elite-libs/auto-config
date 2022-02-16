@@ -1,11 +1,12 @@
-import minimist from "minimist";
-import { infer, never } from "zod";
+import minimist from 'minimist';
+import { LiteralUnion, IterableElement } from 'type-fest';
+// import { infer, never } from "zod";
 
 /**
  * CommandOption defines a system config parameter.
  * Includes where to load the value from, which names to check for, and any validation rules.
  */
-export type CommandOption = OptionTypeConfig & {
+export type CommandOption<TEnumItems extends [string, ...string[]]> = OptionTypeConfig & {
   /** Inline Documentation, used to render `--help` and provide intelligent error messages. */
   help?: string;
   /** flag will only match command line args like `-p` or `-X`, not `--X`
@@ -14,19 +15,22 @@ export type CommandOption = OptionTypeConfig & {
   args?: string | string[];
   /** Throw an error on missing value. */
   required?: boolean;
+
+  enum?: TEnumItems;
+  _enumValue?: LiteralUnion<TEnumItems, string>;
 };
 
 export type OptionTypeConfig =
   | OptionTypeEnum
   | {
-      type?: "string";
+      type?: 'string';
       default?: string;
       transform?: (input: unknown) => string;
       min?: number;
       max?: number;
     }
   | {
-      type: "number";
+      type: 'number';
       default?: number;
       transform?: (input: unknown) => number;
       min?: number;
@@ -38,17 +42,17 @@ export type OptionTypeConfig =
       positive?: boolean;
     }
   | {
-      type: "boolean";
+      type: 'boolean';
       default?: boolean;
       transform?: (input: unknown) => boolean;
     }
   | {
-      type: "date";
+      type: 'date';
       default?: Date;
       transform?: (input: unknown) => Date;
     }
   | {
-      type: "array";
+      type: 'array';
       default?: Array<string | number | boolean | Date | null>;
       transform?: (input: unknown) => string[];
       min?: number;
@@ -59,8 +63,9 @@ export type OptionTypeConfig =
 // type GetEnumOption<TOption> = TOption extends { enum: Array<infer EnumItem> } ? EnumItem : never;
 
 type OptionTypeEnum = {
-  type: "enum";
-  enum: Readonly<[string, ...string[]]>;
+  type: 'enum';
+  // NOTE: Moving enum to base type to avoid TS limitation
+  // enum: Readonly<[string, ...string[]]>;
   default?: string;
   // default?: keyof OptionTypeConfig['enum'];
   transform?: (input: unknown) => string;
@@ -74,26 +79,29 @@ export type ConfigInputs = {
 export type ConfigResults<
   TConfig extends { [K in keyof TConfig]: CommandOption }
 > = {
-  [K in keyof TConfig]: TConfig[K]["required"] extends true
-    ? NonNullable<GetTypeByTypeString<TConfig[K]["type"]>>
-    : Nullable<GetTypeByTypeString<TConfig[K]["type"]>>;
+  [K in keyof TConfig]: TConfig[K]['enum'] extends any[]
+    ? LiteralUnion<TConfig[K]['enum'], string>
+    : TConfig[K]['required'] extends true
+    ? NonNullable<GetTypeByTypeString<TConfig[K]['type']>>
+    : Nullable<GetTypeByTypeString<TConfig[K]['type']>>;
 };
-
-export type Nullable<T> = T | null | undefined;
+// LiteralUnion
+// ValueOf
+export type Nullable<T> = T | null;
 export type Undefinedable<T> = T | undefined;
 
 export type GetTypeByTypeString<TType extends string | undefined> =
-  TType extends "string"
+  TType extends 'string'
     ? string
-    : TType extends "number"
+    : TType extends 'number'
     ? number
-    : TType extends "array"
+    : TType extends 'array'
     ? string[]
-    : TType extends "boolean"
+    : TType extends 'boolean'
     ? boolean
-    : TType extends "enum"
+    : TType extends 'enum'
     ? string
-    : TType extends "date"
+    : TType extends 'date'
     ? Date
     : TType extends undefined
     ? Undefinedable<string>
