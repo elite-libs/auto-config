@@ -101,6 +101,7 @@
     "lodash.keys": "^4.2.0",
     "lodash.mapvalues": "^4.6.0",
     "minimist": "^1.2.5",
+    "type-fest": "^2.11.2",
     "zod": "^3.11.6"
   },
   "files": [
