@@ -173,7 +173,7 @@ describe('handles enum options', () => {
       featureFlagA: {
         args: ['FEATURE_FLAG_A'],
         type: 'enum',
-        enum: ['variant1', 'variant2'],
+        enum: 'variant1,variant2',
       },
     });
     
@@ -190,7 +190,8 @@ describe('handles enum options', () => {
     let csvOpt: undefined | Split<typeof varCsv, ','>[number] = undefined;
     csvOpt = 'v';
     opt = 'v';
-    let iterTest: LiteralUnion<Readonly<typeof vars>, string> = 'variant';
+    let iterTest: LiteralUnion<Readonly<IterableElement<typeof vars>>, string> = 'variant';
+    iterTest = 'v';
 
     const config = autoConfig({
       featureFlagA: {
