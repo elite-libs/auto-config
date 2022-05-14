@@ -1,5 +1,4 @@
 import minimist from "minimist";
-import { infer, never } from "zod";
 
 /**
  * CommandOption defines a system config parameter.
@@ -14,6 +13,7 @@ export type CommandOption = OptionTypeConfig & {
   args?: string | string[];
   /** Throw an error on missing value. */
   required?: boolean;
+  transform?: (input: unknown) => unknown;
 };
 
 export type OptionTypeConfig =
@@ -57,10 +57,11 @@ export type OptionTypeConfig =
 
 // type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
 // type GetEnumOption<TOption> = TOption extends { enum: Array<infer EnumItem> } ? EnumItem : never;
+type PrimitiveTypes = string | number | boolean | Date | null;
 
 type OptionTypeEnum = {
   type: "enum";
-  enum: Readonly<[string, ...string[]]>;
+  enum: Readonly<[PrimitiveTypes, ...PrimitiveTypes[]]>;
   default?: string;
   // default?: keyof OptionTypeConfig['enum'];
   transform?: (input: unknown) => string;
