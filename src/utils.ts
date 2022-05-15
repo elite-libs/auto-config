@@ -1,6 +1,14 @@
+import debug from 'debug';
 import isObject from 'lodash.isobject';
-import keys from 'lodash.keys';
-import type { OptionTypeConfig } from './types';
+import minimist from 'minimist';
+import { isAbsolute } from 'path';
+import type {
+  ConfigInputsParsed,
+  ConfigInputsRaw,
+  OptionTypeConfig,
+} from './types';
+
+const debugLog = debug('auto-config:utils');
 
 export function toBoolean(value: any) {
   value = value.toString().toLowerCase();
@@ -17,7 +25,10 @@ export function toBoolean(value: any) {
 //   return isObject(obj) && !Array.isArray(obj) && keys(obj).length > 0;
 // }
 
-export function applyType(value: string, type: OptionTypeConfig['type'] = 'string') {
+export function applyType(
+  value: string,
+  type: OptionTypeConfig['type'] = 'string'
+) {
   switch (type) {
     case 'string':
       return value;
@@ -46,12 +57,25 @@ export function cleanupStringList(
   return processed as string[];
 }
 
-export const termMarkup = {
-  // https://github.com/cronvel/terminal-kit/blob/master/doc/markup.md
-  italic: (str: string) => `^/${str}^`,
-  dim: (str: string) => `^-${str}^`,
-  bold: (str: string) => `^+${str}^`,
-  reset: () => `^:`,
-};
+export const stripDashes = (str: string = '') => str.replace(/^-+/gi, '');
+export const stripDashesSlashes = (str: string = '') =>
+  str.replace(/^[-\/]+/g, '');
 
-export const stripDashes = (str: string = '') => str.replace(/^-+/mig, '');
+export function getEnvAndArgs({
+  cliArgs = process.argv,
+  envKeys = process.env,
+}: ConfigInputsRaw = {}): ConfigInputsParsed {
+  debugLog('extractEnvArgs.cliArgs', cliArgs);
+  debugLog('extractEnvArgs.envKeys', envKeys);
+
+  let cliParsed: ReturnType<typeof minimist> | undefined = undefined;
+
+  if (cliArgs != null) {
+    // This should exclude the first 2 parts of argv, typically the ...
+    //   path to node & the .js file we're executing.
+    cliArgs = process.argv.filter((arg, i) => !(i < 2 && isAbsolute(arg)));
+    cliParsed = minimist(cliArgs);
+  }
+
+  return { cliArgs: cliParsed, envKeys };
+}

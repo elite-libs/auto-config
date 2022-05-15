@@ -1,13 +1,13 @@
 import { ZodError } from 'zod';
-import { ConfigInputs } from './types';
+import { ConfigInputsParsed } from './types';
 
 export default class ConfigError<
   TError extends Error | undefined = undefined
 > extends Error {
-  inputs?: ConfigInputs;
+  inputs?: ConfigInputsParsed;
   baseError?: TError;
 
-  constructor(message: string, inputs?: ConfigInputs, baseError?: TError) {
+  constructor(message: string, inputs?: ConfigInputsParsed, baseError?: TError) {
     super(message);
     this.baseError = baseError;
     this.inputs = inputs;

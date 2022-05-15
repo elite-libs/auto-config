@@ -1,4 +1,4 @@
-import minimist from "minimist";
+import minimist from 'minimist';
 
 /**
  * CommandOption defines a system config parameter.
@@ -19,14 +19,14 @@ export type CommandOption = OptionTypeConfig & {
 export type OptionTypeConfig =
   | OptionTypeEnum
   | {
-      type?: "string";
+      type?: 'string';
       default?: string;
       transform?: (input: unknown) => string;
       min?: number;
       max?: number;
     }
   | {
-      type: "number";
+      type: 'number';
       default?: number;
       transform?: (input: unknown) => number;
       min?: number;
@@ -38,17 +38,17 @@ export type OptionTypeConfig =
       positive?: boolean;
     }
   | {
-      type: "boolean";
+      type: 'boolean';
       default?: boolean;
       transform?: (input: unknown) => boolean;
     }
   | {
-      type: "date";
+      type: 'date';
       default?: Date;
       transform?: (input: unknown) => Date;
     }
   | {
-      type: "array";
+      type: 'array';
       default?: Array<string | number | boolean | Date | null>;
       transform?: (input: unknown) => string[];
       min?: number;
@@ -57,44 +57,50 @@ export type OptionTypeConfig =
 
 // type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
 // type GetEnumOption<TOption> = TOption extends { enum: Array<infer EnumItem> } ? EnumItem : never;
-type PrimitiveTypes = string | number | boolean | Date | null;
+export type PrimitiveTypes = string | number | boolean | Date | null;
+export type EnumTypes = string; // | number;
 
 type OptionTypeEnum = {
-  type: "enum";
-  enum: Readonly<[PrimitiveTypes, ...PrimitiveTypes[]]>;
+  type: 'enum';
+  enum: Readonly<[EnumTypes, ...EnumTypes[]]>;
   default?: string;
   // default?: keyof OptionTypeConfig['enum'];
   transform?: (input: unknown) => string;
 };
 
-export type ConfigInputs = {
-  cliArgs: minimist.ParsedArgs;
-  envKeys: NodeJS.ProcessEnv;
+export type ConfigInputsRaw = {
+  cliArgs?: string[];
+  envKeys?: Record<string, string | undefined>;
+};
+
+export type ConfigInputsParsed = {
+  cliArgs?: minimist.ParsedArgs;
+  envKeys?: NodeJS.ProcessEnv;
 };
 
 export type ConfigResults<
   TConfig extends { [K in keyof TConfig]: CommandOption }
 > = {
-  [K in keyof TConfig]: TConfig[K]["required"] extends true
-    ? NonNullable<GetTypeByTypeString<TConfig[K]["type"]>>
-    : Nullable<GetTypeByTypeString<TConfig[K]["type"]>>;
+  [K in keyof TConfig]: TConfig[K]['required'] extends true
+    ? NonNullable<GetTypeByTypeString<TConfig[K]['type']>>
+    : Nullable<GetTypeByTypeString<TConfig[K]['type']>>;
 };
 
 export type Nullable<T> = T | null | undefined;
 export type Undefinedable<T> = T | undefined;
 
 export type GetTypeByTypeString<TType extends string | undefined> =
-  TType extends "string"
+  TType extends 'string'
     ? string
-    : TType extends "number"
+    : TType extends 'number'
     ? number
-    : TType extends "array"
+    : TType extends 'array'
     ? string[]
-    : TType extends "boolean"
+    : TType extends 'boolean'
     ? boolean
-    : TType extends "enum"
+    : TType extends 'enum'
     ? string
-    : TType extends "date"
+    : TType extends 'date'
     ? Date
     : TType extends undefined
     ? Undefinedable<string>
