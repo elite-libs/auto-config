@@ -1,4 +1,4 @@
-import { mapValues } from 'lodash';
+import mapValues from 'lodash.mapvalues';
 import { getEnvAndArgs, stripDashesSlashes } from './utils';
 import type { ConfigInputsRaw } from './types';
 

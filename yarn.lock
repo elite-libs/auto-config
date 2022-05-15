@@ -2198,7 +2198,14 @@
   dependencies:
     "@types/lodash" "*"
 
-"@types/lodash@*", "@types/lodash@^4.14.178":
+"@types/lodash.mapvalues@^4.6.7":
+  version "4.6.7"
+  resolved "https://registry.yarnpkg.com/@types/lodash.mapvalues/-/lodash.mapvalues-4.6.7.tgz#a1459b4353c769696b6735f19246753fd25ffc3a"
+  integrity sha512-yGTo9zD60Iw1Q+YBvx4Ad7RDj5rA6EpvYTpVPVsfe6pwHcwDcGChSqL1n2sPBMbCeHJ3R5kcaqpkdlrFe/y4Vg==
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash@*":
   version "4.14.178"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.178.tgz#341f6d2247db528d4a13ddbb374bcdc80406f4f8"
   integrity sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==
