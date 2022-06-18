@@ -6,16 +6,11 @@ const processExitSpy = jest
   // @ts-ignore
   .mockImplementation((code?: number) => void null);
 
-const consoleErrorSpy = jest
-  .spyOn(console, 'error')
-  // @ts-ignore
-  .mockImplementation((...args: any[]) => void null);
-
 beforeEach(() => {
   processExitSpy.mockClear();
-  consoleErrorSpy.mockClear();
 });
-describe('autoConfig core functionality', () => {
+
+describe('core features', () => {
   test('loads environment variables', () => {
     const resetPort = setEnvKey('PORT', '8080');
     const config = autoConfig({
@@ -67,7 +62,7 @@ describe('autoConfig core functionality', () => {
   });
 
   test('throws on missing variable', () => {
-    autoConfig({
+    const fn = () => autoConfig({
       port: {
         help: 'The port to listen on.',
         args: ['port', 'PORT'],
@@ -75,8 +70,7 @@ describe('autoConfig core functionality', () => {
         required: true,
       },
     });
-    expect(processExitSpy).toHaveBeenCalledTimes(1);
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
+    expect(fn).toThrowError(/required/i);
   });
 
   test('supports non-standard argument casing, e.g. --PORT', () => {
@@ -91,7 +85,6 @@ describe('autoConfig core functionality', () => {
     });
     restoreArgv();
     expect(config.port).toBe(8080);
-    expect(processExitSpy).toHaveBeenCalledTimes(0);
   });
 
   test('handles non-required fields', () => {
@@ -116,8 +109,6 @@ describe('autoConfig core functionality', () => {
     });
     expect(config.stageName).toBeUndefined();
   });
-
-
 });
 
 test('ignores env case sensitivity (port === PORT)', () => {
@@ -132,39 +123,44 @@ test('ignores env case sensitivity (port === PORT)', () => {
   });
   process.env.PORT = undefined;
   expect(config.port).toBe(8080);
-  expect(processExitSpy).toHaveBeenCalledTimes(0);
 });
 
-describe('validates config runtime rules', () => {
+describe('runtime validation', () => {
   test('detects invalid string length', () => {
-    const resetEnv = setEnvKey('NODE_ENV', 'dev');
-    autoConfig({
-      env: {
-        help: 'Development or Production Environment',
-        args: ['NODE_ENV'],
-        type: 'string',
-        min: 6,
-      },
-    });
-    resetEnv();
-    expect(processExitSpy).toHaveBeenCalledTimes(1);
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
+    const fn = () => {
+      const resetEnv = setEnvKey('NODE_ENV', 'dev');
+      autoConfig({
+        env: {
+          help: 'Development or Production Environment',
+          args: ['NODE_ENV'],
+          type: 'string',
+          min: 6,
+        },
+      });
+      resetEnv();
+    }
+    expect(fn).toThrowError()
   });
 });
 
-describe('handles enum options', () => {
+describe('enums', () => {
+  let resetEnv: () => void;
+  beforeEach(() => (resetEnv = setEnvKey('FEATURE_FLAG_A', 'variant1')));
+  afterEach(() => resetEnv());
+
   test('detects invalid enum value', () => {
-    const resetEnv = setEnvKey('FEATURE_FLAG_A', 'v1');
-    autoConfig({
-      featureFlagA: {
-        args: ['FEATURE_FLAG_A'],
-        type: 'enum',
-        enum: ['variant1', 'variant2'],
-      },
-    });
-    resetEnv();
-    expect(processExitSpy).toHaveBeenCalledTimes(1);
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
+    const fn = () => {
+      const resetEnv = setEnvKey('FEATURE_FLAG_A', 'v1');
+      autoConfig({
+        featureFlagA: {
+          args: ['FEATURE_FLAG_A'],
+          type: 'enum',
+          enum: ['variant1', 'variant2'],
+        },
+      });
+      resetEnv();
+    };
+    expect(fn).toThrowError();
   });
   test('detects valid enum value', () => {
     const resetEnv = setEnvKey('FEATURE_FLAG_A', 'variant1');
@@ -172,30 +168,29 @@ describe('handles enum options', () => {
       featureFlagA: {
         args: ['FEATURE_FLAG_A'],
         type: 'enum',
-        enum: ['variant1', 'variant2'],
+        enum: ['variant1', 'variant2'] as const,
       },
     });
-    
+
     expect(config.featureFlagA).toBe('variant1');
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(0);
     resetEnv();
   });
   test('supports enum default values', () => {
-    const config = autoConfig({
-      featureFlagA: {
-        args: ['FEATURE_FLAG_A'],
-        type: 'enum',
-        enum: ['variant1', 'variant2'],
-        default: 'variant1',
-      },
-    });
-    
-    expect(config.featureFlagA).toBe('variant1');
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(0);
+    const getConfigError = () =>
+      autoConfig({
+        featureFlagA: {
+          args: ['FEATURE_FLAG_A'],
+          type: 'enum',
+          enum: ['1', '2', '34'] as const,
+          default: 'variant1',
+        },
+      });
+
+    expect(getConfigError).toThrowError();
   });
 });
 
-describe('advanced field processing', () => {
+describe('parsing', () => {
   test('parses csv strings into array fields', () => {
     const resetEnv = setEnvKey('FLAGS', 'dev,qa,prod,staging');
     const config = autoConfig({
@@ -207,7 +202,6 @@ describe('advanced field processing', () => {
     });
     resetEnv();
     expect(processExitSpy).toHaveBeenCalledTimes(0);
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(0);
     expect(config.flags).toEqual(['dev', 'qa', 'prod', 'staging']);
   });
 });
