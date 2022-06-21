@@ -12,19 +12,30 @@ import {
 } from './utils';
 import type {
   CommandOption,
+  CompleteConfig,
   ConfigInputsParsed,
+  ConfigInputsRaw,
   ConfigResults,
 } from './types';
 import { optionsHelp } from './render';
 
 export { easyConfig } from './easy-config';
 
+export const SupportedDataTypes = ['string', 'number', 'boolean', 'array', 'date'];
+
+interface InputOverrides {
+  overrides: ConfigInputsRaw;
+}
+
 export const autoConfig = function <
-  TInput extends { [K in keyof TInput]: CommandOption }
->(config: TInput) {
+  TInput extends CompleteConfig<TInput>
+>(config: TInput, {
+  overrides
+}: InputOverrides = { overrides: {} }) {
   const debugLog = debug('auto-config');
   debugLog('START: Loading runtime environment & command line arguments.');
-  let { cliArgs, envKeys } = getEnvAndArgs();
+  let { cliArgs, envKeys } = getEnvAndArgs({ ...overrides });
+  
   if (debugLog.enabled) {
     debugLog('runtime.cliArgs', JSON.stringify(cliArgs));
     debugLog('runtime.envKeys', JSON.stringify(envKeys));

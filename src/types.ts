@@ -55,6 +55,9 @@ export type OptionTypeConfig =
       max?: number;
     };
 
+
+export type CompleteConfig<TInput> = { [K in keyof TInput]: CommandOption };
+
 // type Flatten<Type> = Type extends Array<infer Item> ? Item : Type;
 // type GetEnumOption<TOption> = TOption extends { enum: Array<infer EnumItem> } ? EnumItem : never;
 export type PrimitiveTypes = string | number | boolean | Date | null;
@@ -74,8 +77,8 @@ export type ConfigInputsRaw = {
 };
 
 export type ConfigInputsParsed = {
-  cliArgs?: minimist.ParsedArgs;
-  envKeys?: NodeJS.ProcessEnv;
+  cliArgs: minimist.ParsedArgs;
+  envKeys: NodeJS.ProcessEnv;
 };
 
 export type ConfigResults<

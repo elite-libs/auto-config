@@ -10,7 +10,7 @@ beforeEach(() => {
   processExitSpy.mockClear();
 });
 
-describe('core features', () => {
+describe.only('core features', () => {
   test('loads environment variables', () => {
     const resetPort = setEnvKey('PORT', '8080');
     const config = autoConfig({
