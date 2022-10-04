@@ -1,6 +1,7 @@
 import * as z from "zod";
 import minimist from "minimist";
-import isString from "lodash.isstring";
+import isString from "lodash/isString.js";
+import cloneDeep from "lodash/cloneDeep.js";
 import debug from "debug";
 import chalk from "chalk";
 import path from "path";
@@ -10,9 +11,14 @@ import {
   getEnvAndArgs,
   stripDashes,
 } from "./utils";
-import type { CommandOption, ConfigInputsParsed, ConfigResults } from "./types";
+import type {
+  CommandOption,
+  ConfigInputsParsed,
+  ConfigResults,
+  GetTypeByTypeString,
+  MockHelpers,
+} from "./types";
 import { optionsHelp } from "./render";
-import forOwn from "lodash/forOwn.js";
 
 export { easyConfig } from "./easy-config";
 
@@ -28,19 +34,14 @@ export const autoConfig = function <
     debugLog("config.keys", Object.keys(config).sort().join(", "));
   }
 
-  type Keys = keyof TInput;
-
   checkSpecialArgs(cliArgs, config);
 
   const schemaObject = buildSchema(config);
 
-  // @ts-ignore
-  let commandOptions = wrapGetterSetter(
-    assembleConfigResults(config, {
-      cliArgs,
-      envKeys,
-    })
-  );
+  let commandOptions = assembleConfigResults(config, {
+    cliArgs,
+    envKeys,
+  });
   debugLog("commandOptions=", commandOptions);
 
   verifySchema(schemaObject, commandOptions, {
@@ -48,49 +49,65 @@ export const autoConfig = function <
     envKeys,
   });
 
-  const initialConfig = Object.freeze(commandOptions);
-
   debugLog("DONE", JSON.stringify(commandOptions));
-  return {
-    ...commandOptions,
-    _reset: reset,
-    _set: set,
-  };
-  function set(key: Keys | object, value?: any) {
-    const pairValues =
-      typeof key === "object" ? Object.entries(key) : [[key, value]];
-
-    pairValues.forEach(([key, value]) => {
-      if (key in commandOptions) commandOptions[key as Keys] = value;
-    });
-    return commandOptions;
-  }
-
-  function reset() {
-    Object.entries(initialConfig).forEach(([key, value]) => {
-      commandOptions[key as Keys] = initialConfig[key as Keys];
-    });
-  }
-  
-  function wrapGetterSetter<TInput extends { [K in keyof TInput]: TInput[K] }>(
-    data: TInput
-  ) {
-    return new Proxy(data, {
-      get(target: TInput, prop: Keys | any) {
-        if (prop in target) {
-          return data[prop as Keys];
-        }
-      },
-      set(target: TInput, prop: Keys | any, value: any) {
-        if (prop in target) {
-          target[prop as Keys] = value;
-          return true;
-        }
-        return false;
-      },
-    });
-  }
+  return commandOptions;
 };
+
+/**
+ *
+ * For testing, see test examples in ./test/index.test.ts
+ */
+export function addMockHelpers<
+  TInput extends { [K in keyof TInput]: TInput[K] }
+>(data: TInput): MockHelpers<TInput> & ConfigResults<TInput> {
+  type Keys = keyof TInput;
+  let someMut = cloneDeep(data);
+  const theTruth = Object.freeze(data);
+  const baseMock: MockHelpers<TInput> = {
+    _set: (key: Keys | object, value?: TInput[Keys]) => {
+      if (typeof key === "object") {
+        Object.assign(someMut, key);
+      } else {
+        someMut[key as Keys] = value!;
+      }
+    },
+    _restore: () => Object.assign(someMut, theTruth),
+    _destroy: () => (someMut = {} as TInput & MockHelpers<TInput>),
+  };
+
+  return Object.entries(someMut).reduce(
+    (enhancedObject, [key, value]) =>
+      Object.defineProperty(enhancedObject, key, {
+        get() {
+          return someMut[key as Keys];
+        },
+        set(newValue: TInput[Keys]) {
+          someMut[key as Keys] = newValue;
+        },
+      }),
+    { ...baseMock, ...someMut } as MockHelpers<TInput> & ConfigResults<TInput>
+  );
+}
+
+//         (enhancedObject, {
+//           public set value(v : string) {
+//           [key]: {
+//             get() {
+//               return enhancedObject[key];
+//             },
+//             set(newValue: TInput[typeof key]) {
+//               if (prop in target) {
+//                 target[prop as Keys] = value;
+//                 return true;
+//               }
+//               return false;
+//             },
+//           },
+//         }),
+//       {} as any
+//     );
+//   }
+// };
 
 function buildSchema<TInput extends { [K in keyof TInput]: CommandOption }>(
   config: TInput

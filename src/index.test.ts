@@ -1,4 +1,4 @@
-import { autoConfig } from './index';
+import { addMockHelpers, autoConfig } from './index';
 import { mockArgv, setEnvKey } from './test/utils';
 
 const processExitSpy = jest
@@ -206,18 +206,21 @@ describe('parsing', () => {
   });
 });
 
-describe.only('Runtime control & mocking', () => {
+describe('Runtime control & mocking', () => {
   test('supports runtime control of config values', () => {
-    const config = autoConfig({
+    const config = addMockHelpers(autoConfig({
       port: {
         args: ['--port', 'PORT'],
         type: 'number',
         default: 8080,
       },
-    });
+    }));
+
+    config._set('port', 9999);
+    expect(config.port).toBe(9999);
     config._set({ port: 3000 });
     expect(config.port).toBe(3000);
-    config._reset();
+    config._restore();
     expect(config.port).toBe(8080);
   });
 });
