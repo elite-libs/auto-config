@@ -205,3 +205,19 @@ describe('parsing', () => {
     expect(config.flags).toEqual(['dev', 'qa', 'prod', 'staging']);
   });
 });
+
+describe.only('Runtime control & mocking', () => {
+  test('supports runtime control of config values', () => {
+    const config = autoConfig({
+      port: {
+        args: ['--port', 'PORT'],
+        type: 'number',
+        default: 8080,
+      },
+    });
+    config._set({ port: 3000 });
+    expect(config.port).toBe(3000);
+    config._reset();
+    expect(config.port).toBe(8080);
+  });
+});
