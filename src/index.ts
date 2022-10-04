@@ -83,7 +83,7 @@ export const autoConfig = function <
       },
       set(target: TInput, prop: Keys | any, value: any) {
         if (prop in target) {
-          data[prop as Keys] = value;
+          target[prop as Keys] = value;
           return true;
         }
         return false;
