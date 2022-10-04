@@ -298,7 +298,7 @@ function getOptionValue({
   debugLog("args", args.join(", "));
   debugLog("cliArgs", cliArgs);
   debugLog("cliFlag", cliFlag);
-  debugLog("envKeys", envKeys);
+  // debugLog("envKeys", envKeys);
   debugLog("inputCliArgs:", inputCliArgs);
   // debugLog('inputEnvKeys:', Object.keys(inputEnvKeys).filter((k) => !k.startsWith('npm')).sort());
   debugLog("Checking.cliArgs:", [...cliFlag, ...cliArgs]);

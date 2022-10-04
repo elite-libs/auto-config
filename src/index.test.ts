@@ -223,4 +223,20 @@ describe('Runtime control & mocking', () => {
     config._restore();
     expect(config.port).toBe(8080);
   });
+
+  test('implicit type from default value', () => {
+    const config = addMockHelpers(autoConfig({
+      port: {
+        args: ['--port', 'PORT'],
+        default: '8080',
+      },
+    }));
+
+    config._set('port', `9999`);
+    expect(config.port).toBe(`9999`);
+    config._set({ port: `3000` });
+    expect(config.port).toBe(`3000`);
+    config._restore();
+    expect(config.port).toBe(`8080`);
+  });
 });
