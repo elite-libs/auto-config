@@ -8,10 +8,18 @@ import type {
   OptionTypeConfig,
 } from './types';
 
+
 const debugLog = debug('auto-config:utils');
 
+/**
+ * ⚠️ **Warning:** Very permissive boolean coercion.
+ * 
+ * 1. Normalizes inputs to string, trim, and lower case.
+ * 2. Returns true if input matches any: `1`, `on`, `t`, `true`, `y`, and `yes`
+ * 
+ */
 export function toBoolean(value: any) {
-  value = value.toString().toLowerCase();
+  value = `${value}`.toString().trim().toLowerCase();
   return (
     value === 'true' ||
     value === 't' ||
@@ -21,9 +29,6 @@ export function toBoolean(value: any) {
     value === 'on'
   );
 }
-// export function isNestedObject(obj: unknown) {
-//   return isObject(obj) && !Array.isArray(obj) && keys(obj).length > 0;
-// }
 
 export function applyType(
   value: string,
@@ -57,16 +62,16 @@ export function cleanupStringList(
   return processed as string[];
 }
 
-export const stripDashes = (str: string = '') => str.replace(/^-+/gi, '');
+export const stripDashes = (str: string = '') => str.replace(/^(-|--)/gi, '');
 export const stripDashesSlashes = (str: string = '') =>
   str.replace(/^[-\/]+/g, '');
 
 export function getEnvAndArgs({
-  cliArgs = process.argv,
+  cliArgs = process.argv.slice(2),
   envKeys = process.env,
 }: ConfigInputsRaw = {}): ConfigInputsParsed {
   debugLog('extractEnvArgs.cliArgs', cliArgs);
-  debugLog('extractEnvArgs.envKeys', envKeys);
+  // debugLog('extractEnvArgs.envKeys', envKeys);
 
   let cliParsed: ReturnType<typeof minimist> | undefined = undefined;
 
@@ -75,7 +80,8 @@ export function getEnvAndArgs({
     //   path to node & the .js file we're executing.
     cliArgs = process.argv.filter((arg, i) => !(i < 2 && isAbsolute(arg)));
     cliParsed = minimist(cliArgs);
+    debugLog('cliParsed.minimist', cliArgs);
   }
 
-  return { cliArgs: cliParsed, envKeys };
+  return { cliArgs: cliParsed!, envKeys };
 }
