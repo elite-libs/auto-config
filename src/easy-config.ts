@@ -31,32 +31,42 @@ type ReturnType<T, TFallback = unknown> = T extends (...args: any[]) => infer R
   : TFallback;
 
 export function easyConfig<TConfig extends { [K in keyof TConfig]: ArgsList }>(
-  config: Readonly<TConfig>,
+  config: TConfig,
   { cliArgs = process.argv, envKeys = process.env }: ConfigInputsRaw = {}
-): {
-  [K in keyof TConfig]: Tail<TConfig[K]> extends Function
-    ? ReturnType<Tail<TConfig[K]>>
-    : string;
-} {
+) {
   const { cliArgs: cliParams, envKeys: envParams } = getEnvAndArgs({
     cliArgs,
     envKeys,
   });
-  return mapValues(config, (argsList, key) => {
-    type ExtractedReturnType = Tail<typeof argsList> extends Function ? ReturnType<Tail<typeof argsList>> : string;
+  type ConfigReturnType<TArgs extends ArgsList> = Tail<TArgs> extends Function
+    ? ReturnType<Tail<TArgs>, string>
+    : string;
 
-    let currentValue: ExtractedReturnType | string | undefined;
-    for (let arg of argsList) {
-      if (typeof arg === "function" && currentValue !== undefined) {
-        currentValue = arg(currentValue);
-      } else if (typeof arg === "string") {
-        // Skip if currentValue is defined.
-        if (currentValue !== undefined) continue;
-        if (cliParams?.[stripDashesSlashes(arg)])
-          currentValue = cliParams?.[stripDashesSlashes(arg)];
-        if (envParams?.[arg]) currentValue = envParams?.[arg];
+  return Object.entries<ArgsList>(config).reduce<{
+    [K in keyof TConfig]: ConfigReturnType<TConfig[K]> | string;
+  }>(
+    (results, [name, argsList]) => {
+      let currentValue: ConfigReturnType<typeof argsList> | string | undefined =
+        undefined;
+      for (let arg of argsList) {
+        if (typeof arg === "function") {
+          currentValue = arg(currentValue);
+        } else if (typeof arg === "string") {
+          // Skip if currentValue is defined.
+          if (currentValue !== undefined) continue;
+          if (cliParams?.[stripDashesSlashes(arg)])
+            currentValue = cliParams?.[stripDashesSlashes(arg)];
+          if (envParams?.[arg]) currentValue = envParams?.[arg];
+        }
+        // if (currentValue !== undefined) {
+        results[name as keyof TConfig] = currentValue!;
+        // }
       }
+      return results;
+      // return currentValue as Tail<typeof argsList> extends Function ? ReturnType<Tail<typeof argsList>, string> : string;
+    },
+    {} as {
+      [K in keyof TConfig]: string | ReturnType<Tail<typeof config[K]>, string>;
     }
-    return currentValue!;
-  });
+  )!;
 }
