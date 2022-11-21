@@ -1,14 +1,14 @@
-import mapValues from 'lodash.mapvalues';
-import { getEnvAndArgs, stripDashesSlashes } from './utils';
-import type { ConfigInputsRaw } from './types';
+import mapValues from "lodash.mapvalues";
+import { getEnvAndArgs, stripDashesSlashes } from "./utils";
+import type { ConfigInputsRaw } from "./types";
 
 /**
  * ArgsList lists the arguments & env vars to read from.
- * 
+ *
  * To transform the value, add trailing callback function(s) to modify the value & type.
  *
  * ### Examples
- * 
+ *
  * - `['--port', (s) => s?.toString() || '']`
  * - `['PORT', parseInt]`
  * - `['--port', '-p', parseInt]`
@@ -31,21 +31,25 @@ type ReturnType<T, TFallback = unknown> = T extends (...args: any[]) => infer R
   : TFallback;
 
 export function easyConfig<TConfig extends { [K in keyof TConfig]: ArgsList }>(
-  config: TConfig,
+  config: Readonly<TConfig>,
   { cliArgs = process.argv, envKeys = process.env }: ConfigInputsRaw = {}
 ): {
-  [K in keyof TConfig]: ReturnType<Tail<TConfig[K]>, string>;
+  [K in keyof TConfig]: Tail<TConfig[K]> extends Function
+    ? ReturnType<Tail<TConfig[K]>>
+    : string;
 } {
   const { cliArgs: cliParams, envKeys: envParams } = getEnvAndArgs({
     cliArgs,
     envKeys,
   });
   return mapValues(config, (argsList, key) => {
-    let currentValue = undefined;
+    type ExtractedReturnType = Tail<typeof argsList> extends Function ? ReturnType<Tail<typeof argsList>> : string;
+
+    let currentValue: ExtractedReturnType | string | undefined;
     for (let arg of argsList) {
-      if (typeof arg === 'function' && currentValue !== undefined) {
+      if (typeof arg === "function" && currentValue !== undefined) {
         currentValue = arg(currentValue);
-      } else if (typeof arg === 'string') {
+      } else if (typeof arg === "string") {
         // Skip if currentValue is defined.
         if (currentValue !== undefined) continue;
         if (cliParams?.[stripDashesSlashes(arg)])
@@ -53,6 +57,6 @@ export function easyConfig<TConfig extends { [K in keyof TConfig]: ArgsList }>(
         if (envParams?.[arg]) currentValue = envParams?.[arg];
       }
     }
-    return currentValue;
+    return currentValue!;
   });
 }
