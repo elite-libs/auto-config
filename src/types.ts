@@ -60,6 +60,12 @@ export type OptionTypeConfig =
 export type PrimitiveTypes = string | number | boolean | Date | null;
 export type EnumTypes = string; // | number;
 
+export interface MockHelpers<TInput> {
+  _set: (key: object | keyof TInput, value?: TInput[keyof TInput] | undefined) => void;
+  _restore: () => Readonly<TInput>;
+  _destroy: () => TInput;
+}
+
 type OptionTypeEnum = {
   type: 'enum';
   enum: Readonly<[EnumTypes, ...EnumTypes[]]>;

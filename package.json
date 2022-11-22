@@ -96,6 +96,7 @@
     "chalk": "^4.0.0",
     "columnify": "1.5.4",
     "debug": "^4.3.3",
+    "lodash": "^4.17.21",
     "lodash.isobject": "^3.0.2",
     "lodash.isstring": "^4.0.1",
     "lodash.keys": "^4.2.0",

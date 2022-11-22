@@ -1,24 +1,25 @@
-import debug from 'debug';
-import isObject from 'lodash.isobject';
-import minimist from 'minimist';
-import { isAbsolute } from 'path';
+import debug from "debug";
+import isObject from "lodash.isobject";
+import minimist from "minimist";
+import { isAbsolute } from "path";
+import { object } from "zod";
 import type {
   ConfigInputsParsed,
   ConfigInputsRaw,
   OptionTypeConfig,
-} from './types';
+} from "./types";
 
-const debugLog = debug('auto-config:utils');
+const debugLog = debug("auto-config:utils");
 
 export function toBoolean(value: any) {
   value = value.toString().toLowerCase();
   return (
-    value === 'true' ||
-    value === 't' ||
-    value === 'yes' ||
-    value === 'y' ||
-    value === '1' ||
-    value === 'on'
+    value === "true" ||
+    value === "t" ||
+    value === "yes" ||
+    value === "y" ||
+    value === "1" ||
+    value === "on"
   );
 }
 // export function isNestedObject(obj: unknown) {
@@ -27,20 +28,20 @@ export function toBoolean(value: any) {
 
 export function applyType(
   value: string,
-  type: OptionTypeConfig['type'] = 'string'
+  type: OptionTypeConfig["type"] = "string"
 ) {
   switch (type) {
-    case 'string':
+    case "string":
       return value;
-    case 'number':
+    case "number":
       return parseInt(value);
-    case 'boolean':
+    case "boolean":
       return toBoolean(value);
-    case 'date':
+    case "date":
       return new Date(value);
-    case 'array':
-      return value.split(',');
-    case 'enum':
+    case "array":
+      return value.split(",");
+    case "enum":
       return value;
     // case 'object':
     //   return value as Record<string, unknown>;
@@ -57,16 +58,19 @@ export function cleanupStringList(
   return processed as string[];
 }
 
-export const stripDashes = (str: string = '') => str.replace(/^-+/gi, '');
-export const stripDashesSlashes = (str: string = '') =>
-  str.replace(/^[-\/]+/g, '');
+export const stripDashes = (str: string = "") => str.replace(/^-+/gi, "");
+export const stripDashesSlashes = (str: string = "") =>
+  str.replace(/^[-\/]+/g, "");
 
 export function getEnvAndArgs({
   cliArgs = process.argv,
   envKeys = process.env,
 }: ConfigInputsRaw = {}): ConfigInputsParsed {
-  debugLog('extractEnvArgs.cliArgs', cliArgs);
-  debugLog('extractEnvArgs.envKeys', envKeys);
+  debugLog("extractEnvArgs.cliArgs", cliArgs);
+  debugLog(
+    "extractEnvArgs.envKeys",
+    prettyPrintObject(envKeys),
+  );
 
   let cliParsed: ReturnType<typeof minimist> | undefined = undefined;
 
@@ -78,4 +82,12 @@ export function getEnvAndArgs({
   }
 
   return { cliArgs: cliParsed, envKeys };
+}
+
+export function prettyPrintObject(obj: object) {
+  return Object.entries(obj)
+  .sort((a, b) => a[0].localeCompare(b[0]))
+  .map(([l, r]) => `${l}=${r}`)
+  .filter((v) => !v.startsWith('npm'))
+  .join("\n")
 }
