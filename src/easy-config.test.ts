@@ -45,7 +45,7 @@ describe('easyConfig', () => {
 
     it('can infer type from callback return type', () => {
       const config = easyConfig({
-        port: ['--port', 'PORT', parseInt],
+        port: ['--port', 'PORT', Number],
       });
       expect(typeof config.port).toBe('number');
       expect(config.port).toEqual(8080);
